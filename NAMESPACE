@@ -1,0 +1,42 @@
+importClassesFrom(methods, character, matrix, numeric)
+
+importMethodsFrom(Biobase, exprs, "exprs<-", fData, "fData<-",
+                  sampleNames)
+
+importMethodsFrom(CGHbase, calls, "calls<-", chromosomes, copynumber,
+                  "copynumber<-", probamp, "probamp<-", probgain,
+                  "probgain<-", probloss, "probloss<-", probnorm,
+                  "probnorm<-", segmented, "segmented<-")
+
+importMethodsFrom(marray, image, points)
+
+importFrom(graphics, abline, axis, barplot, box, hist, layout, mtext,
+           par, segments, title)
+
+importFrom(marray, maPalette)
+
+importFrom(MASS, Null)
+
+importFrom(methods, "@<-", new)
+
+importFrom(mvtnorm, rmvnorm)
+
+importFrom(quadprog, solve.QP)
+
+importFrom(snowfall, sfApply, sfInit, sfLibrary, sfSapply, sfStop)
+
+importFrom(stats, dist, ecdf, mad, median, quantile, sd)
+
+exportPattern("^[^\\.]")
+
+exportClasses(entTest, miTest, rcmFit, rcmTest)
+
+exportMethods(RCMrandom, summary)
+
+export(cghCall2maximumSubset, cghCall2order, cghCall2subset, cghCall2weightedSubset,
+	CNGEheatmaps, entropyTest, expandMatching2singleIDs, ExpressionSet2order,
+	ExpressionSet2subset, ExpressionSet2weightedSubset, getSegFeatures,
+	hdEntropy, hdMI, matchAnn2Ann, matchCGHcall2ExpressionSet, merge2cghCalls,
+	merge2ExpressionSets, mutInfTest, nBreakpoints, profilesPlot, RCMestimation,
+	RCMrandom, RCMtest, splitMatchingAtBreakpoints, uniqGenomicInfo)
+

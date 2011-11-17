@@ -1,0 +1,80 @@
+citHeader("To cite the sigaR package in publications use:")
+
+citEntry(entry="Manual",
+    title = "sigaR: statistics for integrative genomics analyses in R",
+    author = personList(as.person("W. N. van Wieringen")),
+    year = substring(packageDescription("sigaR")$Date,1,4),
+    note = paste("R package version", packageDescription("sigaR")$version),
+    textVersion =
+      paste("Wessel N. van Wieringen (",
+        substring(packageDescription("sigaR")$Date,1,4),
+        ") sigaR: statistics for integrative genomics analyses in R. ",
+        "R package, version ", packageDescription("sigaR")$Version,
+        ".", sep = "")
+)
+
+citEntry(entry="Article",
+    title = "Non-parametric testing for DNA copy number induced differential mRNA gene expression",
+    author = personList(as.person("W.N. van Wieringen"),
+        as.person("M.A. van de wiel")),
+    journal = "Biometrics",
+    volume = 65,
+    number = 1,
+    pages = "19-29",
+    year = 2009,
+    textVersion =
+      paste("Van Wieringen, W.N., Van de Wiel, M.A. (2009),",
+		"Non-parametric testing for DNA copy number induced differential mRNA gene expression.", 
+        	"Biometrics, 65(1), 19-29.")
+)
+ 
+
+citEntry(entry="Article",
+    title = "A random coefficients model for regional co-expression associated with DNA copy number",
+    author = personList(as.person("W.N. van Wieringen"),
+        as.person("J. Berkhof"),
+        as.person("M.A. van de Wiel")),
+    journal = "Statistical Applications in Genetics and Molecular Biology",
+    volume = 9,
+    number = 1,
+    pages = "Article 25",
+    year = 2010,
+    textVersion =
+      paste("Van Wieringen, W.N., Berkhof, J., Van de Wiel, M.A. (2010),",
+        "A random coefficients model for regional co-expression associated with DNA copy number.",
+        "Statistical Applications in Genetics and Molecular Biology, 9(1), Article 25.")
+)
+
+
+citEntry(entry="Article",
+    title = "Statistical analysis of the cancer cell's molecular entropy using high-throughput data",
+    author = personList(as.person("W.N. van Wieringen"),
+        as.person("A.W. van der Vaart")),
+    journal = "Bioinformatics",
+    volume = 27,
+    number = 4,
+    pages = "556-563",
+    year = 2011,
+    textVersion =
+      paste("Van Wieringen, W.N., Van der Vaart, A.W. (2011),",
+		"Statistical analysis of the cancer cell's molecular entropy using high-throughput data.", 
+        	"Bioinformatics, 27(4), 556-563.")
+)
+
+
+citEntry(entry="Article",
+    title = "Statistical analysis of the cancer cell's molecular entropy using high-throughput data",
+    author = personList(as.person("W.N. van Wieringen"),
+        as.person("K. Unger"),
+        as.person("G.G.R. Leday"),
+        as.person("O. Krijgsman"),
+        as.person("R.X. de Menezes"),
+        as.person("B. Ylstra"),
+        as.person("M.A. van de Wiel")),
+    journal = "Submitted",
+    year = 2011,
+    textVersion =
+      paste("Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2011),",
+		"Matching of array CGH and gene expression microarray features for the purpose of integrative analysis.", 
+        	"Submitted.")
+)
