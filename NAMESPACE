@@ -13,6 +13,8 @@ importMethodsFrom(marray, image, points)
 importFrom(graphics, abline, axis, barplot, box, hist, layout, mtext,
            par, segments, title)
 
+importFrom(corpcor, pcor.shrink)
+
 importFrom(marray, maPalette)
 
 importFrom(MASS, Null)
@@ -29,11 +31,13 @@ importFrom(stats, dist, ecdf, mad, median, quantile, sd)
 
 exportPattern("^[^\\.]")
 
-exportClasses(entTest, miTest, rcmFit, rcmTest)
+exportClasses(cisTest, entTest, miTest, rcmFit, rcmTest)
 
 exportMethods(RCMrandom, summary)
 
-export(cghCall2maximumSubset, cghCall2order, cghCall2subset, cghCall2weightedSubset,
+export(cghCall2cghSeg, cghCall2maximumSubset, cghCall2order, cghCall2subset, cghCall2weightedSubset,
+	cghSeg2order, cghSeg2subset, cghSeg2weightedSubset,
+	cisEffectPlot, cisEffectTable, cisEffectTest, cisEffectTune,
 	CNGEheatmaps, entropyTest, expandMatching2singleIDs, ExpressionSet2order,
 	ExpressionSet2subset, ExpressionSet2weightedSubset, getSegFeatures,
 	hdEntropy, hdMI, matchAnn2Ann, matchCGHcall2ExpressionSet, merge2cghCalls,

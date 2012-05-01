@@ -1,3 +1,233 @@
+cghSeg2order <- function(CNdata, chr, bpstart, verbose=TRUE){
+   	###########################################################################################
+	# function that orders cghCall-object genomically
+	###########################################################################################
+
+	# check input
+	if (verbose){ cat("perform input checks...", "\n") }
+	if (as.character(class(CNdata)) != "cghSeg"){ stop("CNdata not of class cghSeg.") }
+	if (!(as.character(class(chr))=="numeric" | as.character(class(chr))=="integer" )){ stop("chr of wrong class.") }
+	if (length(chr) != 1){ stop("chr of wrong length.") }
+	if ( !(chr >= 1 | chr <= ncol(fData(CNdata))) ){ stop("chr exceeds number of columns in featureData.") }
+	if (!(as.character(class(bpstart))=="numeric" | as.character(class(bpstart))=="integer" )){ stop("bpstart of wrong class.") }
+	if (length(bpstart) != 1){ stop("bpstart of wrong length.") }
+	if ( !(bpstart >= 1 | bpstart <= ncol(fData(CNdata))) ){ stop("bpstart exceeds number of columns in featureData.") }
+
+	# extract annotation data for ordering
+	CNann <- fData(CNdata)[, c(chr, bpstart), drop=FALSE]
+
+	# in case columns are of wrong class ....
+	for (i in 1:2){
+		if (is.factor(CNann[,i])){ CNann[,i] <- as.numeric(levels(CNann[,i]))[CNann[,i]] }
+		if (is.character(CNann[,i])){ CNann[,i] <- as.numeric(CNann[,i]) }
+	}
+
+	# order ExpressionSet-object genomically	
+	fData(CNdata) <- fData(CNdata)[order(CNann[,1], CNann[,2]),]
+	copynumber(CNdata) <- copynumber(CNdata)[order(CNann[,1], CNann[,2]),]
+	segmented(CNdata) <- segmented(CNdata)[order(CNann[,1], CNann[,2]),]
+	return(CNdata)
+}
+
+
+
+cghCall2cghSeg <- function (CNdata, verbose = TRUE){
+    if (verbose) {
+        cat("perform input checks...", "\n")
+    }
+    if (as.character(class(CNdata)) != "cghCall") {
+        stop("CNdata not of class cghCall.")
+    }
+   
+
+    fd <- fData(CNdata)
+    newRowNames <- rownames(copynumber(CNdata))
+    if (length(newRowNames) != length(unique(newRowNames))) {
+        warning("modified feature names are returned")
+        slh <- rep(1, length(newRowNames))
+        for (i in 1:length(unique(newRowNames))) {
+            ids <- which(newRowNames == unique(newRowNames)[i])
+            slh[ids] <- 1:length(ids)
+        }
+        newRowNames <- paste(newRowNames, slh, sep = "__")
+    }
+    rownames(fd) <- newRowNames
+    metaData <- data.frame(labelDescription = colnames(fd))
+    fd <- new("AnnotatedDataFrame", data = data.frame(fd), varMetadata = metaData)
+    CNdata <- new("cghSeg", copynumber = data.matrix(data.frame(copynumber(CNdata), row.names = newRowNames)), 
+		segmented = data.matrix(data.frame(segmented(CNdata), row.names = newRowNames)), featureData = fd)
+
+    return(CNdata)
+}
+
+
+
+cghSeg2subset <- function (CNdata, featureSubset, verbose = TRUE){
+    if (verbose) {
+        cat("perform input checks...", "\n")
+    }
+    if (as.character(class(CNdata)) != "cghSeg") {
+        stop("CNdata not of class cghSeg.")
+    }
+    if (!(as.character(class(featureSubset)) == "numeric" | as.character(class(featureSubset)) == 
+        "integer")) {
+        stop("featureSubset of wrong class.")
+    }
+    if (!(length(featureSubset) >= 1)) {
+        stop("featureSubset contains no row numbers.")
+    }
+    if (!(min(featureSubset) >= 1 | max(featureSubset) <= nrow(fData(CNdata)))) {
+        stop("featureSubset contains illegal row numbers.")
+    }
+    fd <- fData(CNdata)[featureSubset, , drop = FALSE]
+    newRowNames <- rownames(copynumber(CNdata))[featureSubset]
+    if (length(newRowNames) != length(unique(newRowNames))) {
+        warning("modified feature names are returned")
+        slh <- rep(1, length(newRowNames))
+        for (i in 1:length(unique(newRowNames))) {
+            ids <- which(newRowNames == unique(newRowNames)[i])
+            slh[ids] <- 1:length(ids)
+        }
+        newRowNames <- paste(newRowNames, slh, sep = "__")
+    }
+    rownames(fd) <- newRowNames
+    metaData <- data.frame(labelDescription = colnames(fd))
+    fd <- new("AnnotatedDataFrame", data = data.frame(fd), varMetadata = metaData)
+    CNdata <- new("cghSeg", copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, 
+            , drop = FALSE], row.names = newRowNames)), segmented = data.matrix(data.frame(segmented(CNdata)[featureSubset, 
+            , drop = FALSE], row.names = newRowNames)), featureData = fd)
+
+    return(CNdata)
+}
+
+
+
+
+cghSeg2weightedSubset <- function (CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus = 1, verbose = TRUE){
+    if (verbose) {
+        cat("perform input checks...", "\n")
+    }
+    if (as.character(class(CNdata)) != "cghSeg") {
+        stop("CNdata not of class cghSeg.")
+    }
+    if (as.character(class(CNdata)) != "cghSeg") {
+        stop("CNdata not of class cghSeg.")
+    }
+    if (!(as.character(class(chr)) == "numeric" | as.character(class(chr)) == 
+        "integer")) {
+        stop("chr of wrong class.")
+    }
+    if (length(chr) != 1) {
+        stop("chr of wrong length.")
+    }
+    if (!(chr >= 1 | chr <= ncol(fData(CNdata)))) {
+        stop("chr exceeds number of columns in featureData.")
+    }
+    if (!(as.character(class(bpstart)) == "numeric" | as.character(class(bpstart)) == 
+        "integer")) {
+        stop("bpstart of wrong class.")
+    }
+    if (length(bpstart) != 1) {
+        stop("bpstart of wrong length.")
+    }
+    if (!(bpstart >= 1 | bpstart <= ncol(fData(CNdata)))) {
+        stop("bpstart exceeds number of columns in featureData.")
+    }
+    if (!(as.character(class(bpend)) == "numeric" | as.character(class(bpend)) == 
+        "integer")) {
+        stop("bpend of wrong class.")
+    }
+    if (length(bpend) != 1) {
+        stop("bpend of wrong length.")
+    }
+    if (!(bpend >= 1 | chr <= ncol(fData(CNdata)))) {
+        stop("bpend exceeds number of columns in featureData.")
+    }
+    copynumberMat <- copynumber(CNdata)
+    segmentedMat <- segmented(CNdata)
+    CNann <- fData(CNdata)
+    rm(CNdata)
+    gc()
+    if (verbose) {
+        cat("generate subsetted raw copy number matrix ...", 
+            "\n")
+    }
+    if (ncpus == 1) {
+        copynumberMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, 
+            copynumberMat, simplify = TRUE))
+    }
+    if (ncpus > 1) {
+        sfInit(parallel = TRUE, cpus = ncpus)
+        sfLibrary(sigaR, verbose = FALSE)
+        copynumberMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, 
+            copynumberMat, simplify = TRUE))
+    }
+    if (verbose) {
+        cat("generate subsetted segmented matrix ...", "\n")
+    }
+    if (ncpus == 1) {
+        segmentedMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, 
+            segmentedMat, simplify = TRUE))
+    }
+    if (ncpus > 1) {
+        segmentedMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, 
+            segmentedMat, simplify = TRUE))
+    }
+    if (verbose) {
+        cat("generate subsetted call matrices ...", "\n")
+    }
+    if (verbose) {
+        cat("reorganize annotation ...", "\n")
+    }
+    if (ncpus == 1) {
+        annotation <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, 
+            CNann, chr, bpstart, bpend, simplify = TRUE))
+    }
+    if (ncpus > 1) {
+        annotation <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, 
+            CNann, chr, bpstart, bpend, simplify = TRUE))
+    }
+    colnames(annotation) <- c("Chromosome", "Start", "End")
+    if (ncpus == 1) {
+        rownames(annotation) <- as.character(sapply(featuresAndWeights, 
+            .slhFuncCombineFeatureNames, rownames(CNann), simplify = TRUE))
+    }
+    if (ncpus > 1) {
+        rownames(annotation) <- as.character(sfSapply(featuresAndWeights, 
+            .slhFuncCombineFeatureNames, rownames(CNann), simplify = TRUE))
+    }
+    if (length(rownames(annotation)) != length(unique(rownames(annotation)))) {
+        warning("modified feature names are returned")
+        newRowNames <- rownames(annotation)
+        slh <- rep(1, length(newRowNames))
+        for (i in 1:length(unique(newRowNames))) {
+            ids <- which(newRowNames == unique(newRowNames)[i])
+            slh[ids] <- 1:length(ids)
+        }
+        newRowNames <- paste(newRowNames, slh, sep = "__")
+        rownames(annotation) <- newRowNames
+    }
+    fInfo <- new("AnnotatedDataFrame", data = data.frame(annotation), 
+        varMetadata = data.frame(labelDescription = c("Chromosome", 
+            "Start", "End")))
+    if (ncpus > 1) {
+        sfStop()
+    }
+    rownames(copynumberMat) <- rownames(annotation)
+    rownames(segmentedMat) <- rownames(annotation)
+    if (verbose) {
+        cat("merge into cghSeg object ...", "\n")
+    }
+    CNdata <- new("cghSeg", copynumber = data.matrix(data.frame(copynumberMat, 
+		row.names = rownames(annotation))), segmented = data.matrix(data.frame(segmentedMat, 
+		row.names = rownames(annotation))), featureData = fInfo)
+    return(CNdata)
+}
+
+
+
+
+
 splitMatchingAtBreakpoints <- function(matchedIDs, CNdata){
    	############################################################################
 	# function splits matching list-object at breakpoints

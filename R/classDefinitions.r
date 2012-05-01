@@ -1,3 +1,5 @@
+setClass("cisTest", representation(geneInfo="data.frame", geneId="numeric", comparison="numeric", av.prob1="numeric", av.prob2="numeric", effectSize="numeric", R2="numeric", regId="numeric", beginReg="numeric", endReg="numeric", shrinkage="numeric", p.value="numeric", adjP.value="numeric", analysisType="character", testStatistic="character", nPerm="numeric"))
+
 setClass("entTest", representation(statistic="numeric", p.value="numeric", null.dist="numeric", nperm="numeric", remark="character"))
 
 setClass("miTest", representation(statistic="numeric", p.value="numeric", null.dist="numeric", nperm="numeric", remark="character"))
@@ -11,6 +13,7 @@ setGeneric(name="RCMrandom", def=function(object){standardGeneric("RCMrandom")})
 setGeneric(name=".RCMloss", def=function(object, Y){standardGeneric(".RCMloss")})
 
 setGeneric("summary")
+
 setMethod("summary", "rcmTest", function(object){
 	###########################################################
 	# summarize clm object

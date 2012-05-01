@@ -20,7 +20,7 @@ hdEntropy <- function(Y, method="normal", k=1, center=TRUE, indKnn=TRUE){
 		w <- rep(1/n, n)
 		# lambda <- as.numeric(pvt.get.lambda(x=wt.scale(Y, w, center = TRUE, scale = TRUE), lambda=-1, w=w, verbose=FALSE, type = "correlation", target=0)$lambda, 0)
 		lambda <-  attr(pcor.shrink(Y, verbose=FALSE), "lambda")
-		print(paste("shrinkage factor:", round(lambda, d=5), sep=" "))
+		print(paste("shrinkage factor:", round(lambda, digits=5), sep=" "))
  
 		# calculate entropy (part 2)
 		part2.slh <- rep(0, p)
@@ -84,7 +84,7 @@ hdMI <- function(Y, X, method="normal", k=1, center=TRUE, rescale=TRUE){
 		w <- rep(1/n, n)
 		# lambda <- as.numeric(pvt.get.lambda(x=wt.scale(cbind(Y, X), w, center = TRUE, scale = TRUE), lambda=-1, w=w, verbose=FALSE, type = "correlation", target=0)$lambda, 0)
 		lambda <-  attr(pcor.shrink(cbind(Y, X), verbose=FALSE), "lambda")
-		print(paste("shrinkage factor:", round(lambda, d=5), sep=" "))
+		print(paste("shrinkage factor:", round(lambda, digits=5), sep=" "))
  
 		# calculate joint entropy
 		part2.slh <- rep(0, pY+pX)

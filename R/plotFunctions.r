@@ -214,7 +214,7 @@ CNGEheatmaps <- function(CNdata, GEdata, location="mode", colorbreaks="equiquant
 
 	# start plotting
 	def.par <- par
-	fl <- layout(matrix(c(1,2,3,1,2,3,1,2,3), 3, 3, byrow = TRUE), width=c(1,9,9))
+	fl <- layout(matrix(c(1,2,3,1,2,3,1,2,3), 3, 3, byrow = TRUE), widths=c(1,9,9))
 	# layout.show(fl)
 	par(mar=c(3,2,4,0))
 	image(z=matrix(chrInd, nrow=1), xaxt="n", yaxt="n", col=c("blue", "yellow"))

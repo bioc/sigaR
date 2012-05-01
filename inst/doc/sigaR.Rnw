@@ -4,8 +4,8 @@
 
 
 \documentclass{article}
-\usepackage{natbib, Sweave, paralist, afterpage}
-\bibliographystyle{apalike}
+\usepackage{natbib, Sweave, paralist, afterpage, float}
+% \bibliographystyle{apalike}
 
 
 \setlength{\evensidemargin}{.5cm} \setlength{\oddsidemargin}{.5cm}
@@ -32,6 +32,8 @@
 \date{}
 
 
+\restylefloat{figure}
+
 
 \begin{document}
 
@@ -41,12 +43,17 @@
 
 \newpage
 
+
+
+
+
 \section{Introduction}
-This vignette shows the use of the {\tt sigaR} package. The following to features are discussed in some detail: 
+This vignette shows the use of the {\tt sigaR} package. The following features are discussed in some detail: 
 \begin{compactitem}
-\item the matching of features from different genomic platforms of \cite{VWie2011b},
+\item the matching of features from different genomic platforms of \cite{VWie2012a},
+\item the detection of the cis-effect of DNA copy number on gene expression levels as proposed by \cite{VWi2009a},
 \item the fitting of the random coefficients model described in \cite{VWie2010a} and the assessment of significance of its parameters, and
-\item the study of genomic entropy, as done in \cite{VWie2011}.
+\item the study of genomic entropy within gene sets, as done in \cite{VWie2011}.
 \end{compactitem}
 These are illustrated on a small example data set, which is introduced first.
 
@@ -59,8 +66,7 @@ The pre-processing of the DNA copy number data consists of removal of clones wit
 imputation of remaining missing values using the $k$-nearest neighbor method \citep{Tro2001}, mode normalization, segmentation using the CBS method of \cite{Ols2004}, and calling using CGHcall of \cite{VdW2007a}. 
 The gene expression data are within-array median normalized. 
 After pre-processing, only data from chromosome 16 is maintained and included in the {\tt sigaR}-package.
-\\
-\\
+
 Load the full Pollack breast cancer data:
 <<>>=
 library(sigaR)
@@ -68,16 +74,18 @@ data(pollackCN16)
 data(pollackGE16)
 @
 The code above loads a {\tt cghCall} and {\tt ExpressionSet} object containing annotated DNA copy number and gene expression data, respectively.
+\\
+\\
+Each of the pre-processing steps yields a different data set: normalized data, segmented data, and (hard or soft) called data. 
+There appears to be little consensus on which should be used for down-stream (integrative) analysis. 
+The methods, whose implementation is illustrated below, vary in the type of pre-processed DNA copy number data used. 
+This reflects our own varying opinion on the matter.
+See \cite{VWie2007} or \cite{VdWi2011a} or for a more elaborate discussion on the type of DNA copy number data to use for downstream analysis.
 
 
 
 
-% \section{Motivation}
-% The need for integration of genomic data from multiple sources is imperative for a mechanistic understanding of cancer. By putting together partial views
-% of a complex process like tumorigenesis, we may obtain a more accurate and complete picture of the molecular mechanisms underlying it. Besides deeper
-% biological insights, an integrative approach is likely to result in targeted follow-up experiments and efficient use of available resources.
-
-
+\newpage
 \section{Matching}
 The first step of an integrative analysis often comprises of the matching of the features of the platforms involved. 
 For the matching of array CGH and gene expression data, the objective is to assign the appropriate DNA copy number to each feature on the gene expression array. 
@@ -85,7 +93,7 @@ Note this is not the same as to reproduce the matching produced by, say, Ensembl
 In order to do the matching chromosome, start and end base pair information of the features of both platforms needs to be included in the {\tt cghCall}- and {ExpressionSet}-object.
 The function {\tt matchCGHcall2ExpressionSet} is tailor-made for the matching of DNA copy number and gene expression data stored in 
 {\tt cghCall}- and {\tt ExpressionSet}-objects, and provides three types of matching. The function {\tt matchAnn2Ann} provides other ways of matching.
-Details of all matching methods incorporated in the {\tt sigaR}-package are described in \cite{VWie2011b}.
+Details of all matching methods incorporated in the {\tt sigaR}-package are described in \cite{VWie2012a}.
 
 
 The DNA copy number and gene expression data of the breast cancer data set included in the package have been generated on the same platform. 
@@ -114,7 +122,9 @@ For the matching of other platforms the function {\tt matchAnn2Ann} can be used.
 <<>>=
 data(pollackCN16)
 data(pollackGE16)
-matchedIDs <- matchAnn2Ann(fData(pollackCN16)[,1], fData(pollackCN16)[,2], fData(pollackCN16)[,3], fData(pollackGE16)[,1], fData(pollackGE16)[,2], fData(pollackGE16)[,3], method="distance", verbose=FALSE)
+matchedIDs <- matchAnn2Ann(fData(pollackCN16)[,1], fData(pollackCN16)[,2], 
+    fData(pollackCN16)[,3], fData(pollackGE16)[,1], fData(pollackGE16)[,2], 
+    fData(pollackGE16)[,3], method="distance", verbose=FALSE)
 @
 How many gene expression features not been mapped?
 <<>>=
@@ -126,10 +136,11 @@ table(sapply(matchedIDs, nrow, simplify=TRUE))
 @
 Most gene expression features are matched to a single DNA copy number feature, but some are matched to two or more features.
 In the latter case, the data from those features needs to be summarized into a single DNA copy number signature for that gene expression features.
-This may be done by weighted averaging, but other suggestions are given in \cite{VWie2011b}.
+This may be done by weighted averaging, but other suggestions are given in \cite{VWie2012a}.
 Hereto, add offset to distances (avoids infinitely large weights):
 <<>>=
-matchedIDs <- lapply(matchedIDs, function(Z, offset){ Z[,3] <- Z[,3] + offset; return(Z)}, offset=1)
+matchedIDs <- lapply(matchedIDs, function(Z, offset){ Z[,3] <- Z[,3] + offset; return(Z)}, 
+    offset=1)
 @
 Extract id's for object subsetting:
 <<>>=
@@ -145,13 +156,13 @@ The results are matched {\tt cghCall}- and {\tt ExpressionSet}-objects, which ar
 
 
 
+
+\newpage
 \section{Joint plotting}
 To get a overall impression of the relation between DNA copy number and gene expression data, plot the heatmaps of
 both molecular levels simultaneously:
-% \begin{Scode}
-% > CNGEheatmaps(pollackCN16, pollackGE16, location = "mode", colorbreaks = "equiquantiles")
-% \end{Scode}
 
+\setkeys{Gin}{width=0.6\textwidth}
 \begin{center}
 \begin{figure}[!ht]
 <<fig=TRUE>>=
@@ -187,26 +198,238 @@ profilesPlot(pollackCN16, pollackGE16, 23, 16, verbose=FALSE)
 \noindent
 The color coding in the background indicate the aberration call probabilities as produced by {\tt CGHcall} \citep{VdW2007a}.
 \afterpage{\clearpage}
+\newpage
 
-\section{Region analysis}
+
+
+\section{Statistical unit}
+Before to engage in any integrative analysis it is important to identify the statistical unit of interest. 
+The statistical unit refers to the biological entity upon which the integrative analysis is supposed to shed light 
+w.r.t. the relationship between the molecular levels involved. The following statistical units are discerned (and illustrated in Figure \ref{fig:statisticalUnit}):
+\begin{compactitem}
+\item \textit{Gene}: The individual transcripts interrogated by the expression array.
+
+\item \textit{Region}: This is a set of contiguous genes with the same DNA copy number signature. 
+Extreme cases of a region are the chromosomes, or even the whole genome.
+Regions are often determined by the data of the samples in the study. 
+This implies that their definition may vary between data sets, even though they have been generated on the same platform.
+
+\item \textit{Pathway}: This is a set of genes from all over the genome. 
+A pathway is determined by knowledge from previous experiments that 
+has been casked in repositories like GO \citep{GOC2000} and KEGG \citep{Oga1999}. 
+Also the presence of genes on the expression array determines the actual constitution of the set.
+\end{compactitem}
+A gene is a limiting case of either a region or a pathway. Similarly, a region is a special case of a pathway.
+
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[width=.70\textwidth]{statisticalUnit.pdf}
+    \caption{The three statistical units discerned.}
+    \label{fig:statisticalUnit}
+  \end{center}
+\end{figure}
+\afterpage{\clearpage}
+\newpage
+
+
+
+
+
+
+
+\section{Gene-wise analysis}
 We illustrate the integration of DNA copy number and mRNA gene expression data. The two are linked through the central dogma of molecular biology.
 The dogma suggests that a(n) decrease/increase in copy number of a particular genomic segment leads to a(n) decrease/increase in the expression of genes that
 map to that segment. This proportional relationship will be a leading principle in our integrative approaches.
 
-A sensible starting point is a univariate integrative analysis, i.e. an analysis at the level of the individual gene (Van Wieringen {\it et al}., 2009). Such approaches
+A sensible starting point is a univariate integrative analysis, i.e. an analysis at the level of the individual gene \cite{VWi2009a}. Such approaches
 aim to detect genes whose expression levels are positively associated with copy number changes. Such genes are candidate cancer genes. The detection of
 cancer genes is performed within a model relating the two molecular levels. The model enables the estimation of the amount of differential expression due to
 copy number changes and the employment of a statistical test to assess the significance of the association.
 
+The method of \cite{VWi2009a} comes out second in a comparison of genomic {\it cis}-effect detection methods \citep{Louh2012}.
+That is, second after the method developed by the authors of the same comparison. 
+\\
+\\
+Note that the method for {\it cis}-effect detection of \cite{VWi2009a} uses the call probabilities of the preprocessed DNA copy number data.
+Would one prefer to use the segmentated DNA copy number data, a good alternative is the method of \cite{Leda2012}. The method of \cite{Leda2012} models the {\it cis}-effect of DNA copy number on gene expression levels by means of 
+piecewise linear regression splines. The method of \cite{Leda2012} is implemented in the {\tt plrs}-package.
+
+
+
+
+\subsection{Pre-test and tuning}
+The method of \cite{VWi2009a} exploits the census of cancer genes \citep{Fut2004}, which distinguishes between proto-onco and 
+tumor-suppressor genes associated with gain and loss, respectively. This gain (or loss) of a particular genomic segment is, 
+through the central dogma of biology, likely to result in increased (or decreased) transcription levels of the genes on the 
+segment. Motived by Figure 1b of \cite{Bero2010}, it is assumed that, within cancer of a particular tissue, a gene cannot be a 
+proto-onco gene as well as tumor-suppressor gene for that tissue.
+
+Unfortunately it is unknown for every gene whether it is a proto-onco or tumor-suppressor gene. Consequently, one does not know
+whether to compare the gene expression between samples with a normal and gain, or between those with a loss and normal.
+This is decided by the array CGH data: e.g., if, for a particular gene, the call probability mass (as measured over the samples) of a gain exceeds that of a loss,
+the loss and normal call probability masses will be merged and the `no-gain vs. gain' comparison is carried out for this gene. 
+\\
+\\
+Also prior to testing, it is recommendable to discard genes beforehand. This benefits the overall (FDR) power of the testing procedure.
+Exclusion of genes is done:
+\begin{enumerate}
+\item On the basis of the sum of a gene's marginal call probabilities of loss and gain. If it is smaller than {\tt minCallProbMass}, the gene
+is discarded from further analysis. Effectively, this ensures identifiability of the copy number effect on expression levels.
+
+\item On the basis of a metric, calculated from the DNA copy number data only, which aims to identify
+two situations for which the test is likely to have low power. 
+\begin{itemize} 
+\item The first situation occurs when there is an unbalance between the
+expected call probabilities, as assessed \textit{over} all samples. For instance, genes with 
+\[
+\sum_{i=1}^n P(\mbox{sample } i \mbox{ has a loss at the location of gene } j) = 0.001
+\]
+and
+\[
+\sum_{i=1}^n P(\mbox{sample } i \mbox{ has no aberration at the location of gene } j) = 0.999
+\]
+have an unbalanced call probability distribution. A priori one expects that the proposed
+tests may not be powerful to detect a shift for such genes. 
+\item
+The second situation occurs when many samples individually (i.e.
+\textit{within} sample) have a uniformly distributed call probability mass: 
+$P(\mbox{sample } i \mbox{ has loss at the location of gene } j) = \frac{1}{2}$ and $P(\mbox{sample} i \mbox{has an aberration at the location of gene} j)  = \frac{1}{2}$. This indecision on the call is propagated into the test, resulting in low power.
+\end{itemize}
+The cut-off for this metric is chosen in such a way that the expected number of true discoveries is maximized.
+\end{enumerate}
+The following command line performs the pre-testing and tuning:
+\begin{Scode}
+> genes2test <- cisEffectTune(pollackCN16, pollackGE16, "wmw", nGenes = 100,
+    nPerm = 250, minCallProbMass = 0.10)
+\end{Scode}
+To obtain the number of excluded genes:
+\begin{Scode}
+> nrow(pollackGE16) - length(genes2test)
+\end{Scode}
+The {\tt genes2test} object is a vector of the genes that are passed on for testing.
+
+The number of excluded genes depends among others on the DNA copy number profiles. 
+If these are `wild', exhibiting many aberrations all over the genome, we expect most genes to have 
+a reasonably balanced expected (over the samples) call probability distribution.
+If, however, there are only few genomic regions aberrated, the contrary is expected, and more genes are expected to be excluded.
+The number of excluded genes also depends upon the number of genes whose expression is affected by copy
+number changes. This, in combination with an FDR rule, increases the probability of detecting shifts for genes with
+unbalanced or imprecise call probability mass.
+
+
+
+
+\subsection{Testing}
+We are now ready to test for DNA copy number induced differential gene expression on the set of selected genes:
+\begin{Scode}
+> cisTestResults <- cisEffectTest(pollackCN16, pollackGE16, genes2test, 1, 
+    "univariate", "wmw", nPerm = 10000, lowCiThres = 0.10)
+\end{Scode}
+The number of significant genes, obtained through:
+\begin{Scode}
+> fdrCutoff <- 0.10
+> sum(cisTestResults@adjP.values < fdrCutoff)
+\end{Scode}
+equals 11 at a FDR significance level of 0.05 and 16 at 0.10. Hence, approximately 10\% of the genes included in the test (114) are declared significant.
+This is somewhat lower than the roughly 20\% found in the analysis of the full data set \citep{VWi2009a}, and may be due to the fact that fewer genomic aberrations occur on this chromosome compared to other in the data set.
+Irrespectively, such large percentages of significant genes are in line with `major direct role' of DNA copy number alterations in 
+the transcriptional program as claimed by \cite{Pol2002}, 
+but forces us to look not only at statistical significance, but also at biological relevance. 
+Gene prioritization (ranking) could be done by using the effect size and/or the coefficient of determination.
+
+
+Finally, a global view of the effect of DNA copy number on gene expression levels is provided by a 
+histogram of the effect sizes for all selected genes, which may be obtained through:
+\begin{Scode}
+> hist(cisTestResults@effectSize, n=50, col="blue", border="lightblue", 
+    xlab="effect size", main="histogram of effect size")
+\end{Scode}
+\setkeys{Gin}{width=0.5\textwidth}
+\begin{center}
+\begin{figure}[!h]
+<<fig=TRUE,echo=FALSE>>=
+library(sigaR)
+data(pollackCN16)
+data(pollackGE16)
+cisTestResults <- cisEffectTest(pollackCN16, pollackGE16, 1:nrow(pollackGE16), 1, "univariate", "wmw",  nPerm = 10, lowCiThres = 0.10, verbose=FALSE)
+hist(cisTestResults@effectSize, n=50, col="blue", border="lightblue", xlab="effect size", main="histogram of effect size")
+@
+\end{figure}
+\end{center}
+For the Pollack chromosome 16 data the histogram shows an effect size distribution that is clearly shifted away from zero, indicating that many genes have affected expression levels, in turn confirming the aformentioned `major direct role'.
+
+
+The top ten of most significant genes are obtained as follows:
+\begin{Scode}
+>  cisEffectTable(cisTestResults, number=10, sort.by="p.value")
+             ... geneId comparison av.prob1 av.prob2 effectSize     R2 p.value adjP.value
+IMAGE:366728 ...    174          1   0.1110   0.8888     1.1840 0.3138  0.0001 0.00570000
+IMAGE:51320  ...    237          2   0.8970   0.1029     1.3465 0.4165  0.0002 0.00570000
+IMAGE:625683 ...    229          2   0.8977   0.1022     1.5268 0.3378  0.0002 0.00570000
+IMAGE:825335 ...    239          2   0.8970   0.1029     1.1664 0.1830  0.0002 0.00570000
+IMAGE:897774 ...    236          2   0.8970   0.1029     1.8775 0.3143  0.0004 0.00912000
+IMAGE:845419 ...    238          2   0.8970   0.1029     1.6652 0.4841  0.0011 0.01646667
+IMAGE:52226  ...     90          2   0.8911   0.1087     2.6185 0.2609  0.0012 0.01646667
+IMAGE:261971 ...    240          2   0.8970   0.1029     1.0780 0.3931  0.0013 0.01646667
+IMAGE:279152 ...     55          2   0.8764   0.1234     0.6754 0.1778  0.0013 0.01646667
+IMAGE:487831 ...     89          2   0.8911   0.1087     2.0120 0.2403  0.0019 0.02166000
+\end{Scode}
+The most significant gene is interrogated by clone IMAGE:366728. It is lost in approximately 11\% of the samples. 
+The estimated {\it cis}-effect size of DNA copy number aberrations on the expression levels of this transcripts equals 1.1840.
+With an $R^2 = 0.31$, the genomic aberrations explain explains 31\% of the variation in the expression of the transcript interratogated by IMAGE:366728. 
+The multiplicity corrected $p$-value of the proposed test equals IMAGE:366728 is depicted in the figure below. 
+
+
+\setkeys{Gin}{width=0.5\textwidth}
+\begin{center}
+\begin{figure}[!ht]
+<<fig=TRUE,echo=FALSE>>=
+op <- par(mfrow = c(1, 1), pty = "m")
+data(pollackCN16)
+data(pollackGE16)
+cisEffectPlot(237, pollackCN16, pollackGE16)
+@
+\end{figure}
+\end{center}
+
+\afterpage{\clearpage}
+\newpage
+
+
+
+\subsection{Regional analysis}
 The breakpoint nature of the copy number data implies that neighboring genes share the same copy number signature. One expects that their expression
 levels are affected in a similar fashion. Indeed, it has been observed that co-expressed neighborhoods, neighborhoods of contiguous genes showing markedly
 similar expression patterns, appear throughout the cancer genome and often coincide with the location of well-known recurrent copy number aberrations. This
 suggests that CNAs (Copy Number Aberrations) not only affect the expression of key proto-onco or tumor-suppressor genes, but may also alter the expression
 levels of many other genes in the cancer genome. In particular, whole chromosome aberrations have been shown to affect expression levels of many genes
-are affected in accordance with the gene dosage. All this motivates the modification of the univariate approach in order to borrow information across these
-genes (Van Wieringen {\it et al}., 2009). 
+are affected in accordance with the gene dosage. 
 
-The univariate approach can also be extended to describe the relation between the two molecular levels in a set of neighboring genes with identical copy number aberration patterns explicitly. 
+The above motivates the modification of the univariate approach. In \cite{VWi2009a}
+this is done by borrowing information across the genes within each region 
+(defined as a series of adjacent clones with the same DNA copy number signature), but test for
+DNA copy number induced differential expression per gene. This is done by shrinking the test statistics within the region. 
+In order to perform such a `regional analysis' change the {\tt analysisType} parameter:
+\begin{Scode}
+> cisTestResults <- cisEffectTest(pollackCN16, pollackGE16, genes2test, 1, 
+    "regional", "wcvm", nPerm = 10000, lowCiThres = 0.10)
+\end{Scode}
+Compare this to the results of the univariate analysis.
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\newpage
+\section{Region analysis}
+A more formaly extension of the univariate approach would describe the relation between the two molecular levels in a set of neighboring genes with identical copy number aberration patterns explicitly. 
 In Van Wieringen {\it et al}. (2010) we proposed a multivariate random coefficients model which addresses regional co-expression through the 
 incorporation of fixed parameters for the joint copy number effect on the expression levels of all genes in the region, with the inclusion of random coefficients for possible individual gene effects. In addition, co-expression non-attributable to copy number changes is accounted for by the
 correlation structure of the residual gene expression (caused by, e.g., epigenetic effects or a common transcription factor). 
@@ -309,11 +532,15 @@ for (u in 1:1000){
 verts <- rbind(apply(GEpred, 2, min), apply(GEpred, 2, max))
 @
 Now plot the result:
+\setkeys{Gin}{width=0.5\textwidth}
 \begin{center}
 \begin{figure}[!ht]
 <<fig=TRUE>>=
-plot(lm(Y[,1] ~ X[,1])$fitted.values ~ X[,1], type="l", ylim=c(-1.0, 2.2), ylab="gene expression", xlab="DNA copy number")
-polygon(x=c(X[order(X[,1]), 1], X[order(X[,1], decreasing = TRUE), 1]), y=c(verts[1, order(X[,1])], verts[2, order(X[,1], decreasing = TRUE)]), col="pink", border="pink")
+plot(lm(Y[,1] ~ X[,1])$fitted.values ~ X[,1], type="l", ylim=c(-1.0, 2.2), 
+    ylab="gene expression", xlab="DNA copy number")
+polygon(x=c(X[order(X[,1]), 1], X[order(X[,1], decreasing = TRUE), 1]), 
+    y=c(verts[1, order(X[,1])], verts[2, order(X[,1], decreasing = TRUE)]), 
+    col="pink", border="pink")
 for (j in 1:ncol(Y)){
 	lines(X[,1], lm(Y[,j] ~ X[,1])$fitted.values)
 }
@@ -325,6 +552,13 @@ The pink area indicates where we would expect -- on the basis of the fitted rand
 Indeed, they fall inside the pink area. The red line represents the shared DNA copy number effect on gene expression levels within the region.
 \afterpage{\clearpage}
 \newpage
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 \section{Pathway analysis}
 The random coefficients model of \cite{VWie2010a} analyzes regions, a gene set that comprises of contiguous genes. 
@@ -351,7 +585,7 @@ Again, extract the DNA copy number (normalized log2 ratios) and gene expression 
 X <- copynumber(pollackCN16)
 Y <- exprs(pollackGE16)
 @
-Transpose both data matrices to the traditional regresion representation:
+Transpose both data matrices to the traditional regression representation:
 <<>>=
 Y <- t(Y)
 X <- t(X)
@@ -374,10 +608,13 @@ The $k$-NN entropy statistic is composed of the entropies at each observation. E
 neighbor genomic entropy estimate may then be plotted against its contribution to the $k$-th nearest neighbor transcriptomic entropy
 estimate. If indeed the entropies of the two molecular levels are closely related, we expect the `marginal' entropies at each
 observation to be positively associated. Below we plot these `marginal' entropies of both molecular levels against other:
+\setkeys{Gin}{width=0.5\textwidth}
 \begin{center}
 \begin{figure}[!ht]
 <<fig=TRUE>>=
-plot(isoreg(hdEntropy(Y, method="knn") ~ hdEntropy(X, method="knn")), lwd=2, pch=20, main="", ylab="marginal transcriptomic entropy", xlab="marginal genomic entropy")
+plot(isoreg(hdEntropy(Y, method="knn") ~ hdEntropy(X, method="knn")), 
+    lwd=2, pch=20, main="", ylab="marginal transcriptomic entropy", 
+    xlab="marginal genomic entropy")
 @
 \end{figure}
 \end{center}
@@ -387,14 +624,63 @@ cor(hdEntropy(Y, method="knn"), hdEntropy(X, method="knn"), m="s")
 @
 The correlation between the `marginal' entropies of the two molecular levels too reveals a positive association.
 
- 
+
+
+
+
+\newpage 
+\setlength{\bibsep}{1pt}
+{\footnotesize
 \bibliographystyle{apalike}
 \begin{thebibliography}{}
+\bibitem[Beroukhim {\em et~al.}(2010)Beroukhim, Mermel, Porter, Wei, Raychaudhuri, Donovan, Barretina, Boehm, Dobson, 
+            Urashima, McHenry, Pinchback, Ligon, Cho, Haery, Greulich, Reich, Winckler, Lawrence, Weir, Tanaka, Chiang, Bass, Loo, Hoffman, Prensner, Liefeld, Gao, Yecies, Signoretti,
+            Maher, Kaye, Sasaki, Tepper, Fletcher, Tabernero, Baselga, Tsao, Demichelis, Rubin, Janne, Daly, Nucera, Levine, Ebert, Gabriel, Rustgi, Antonescu, Ladanyi, Letai,
+            Garraway, Loda, Beer, True, Okamoto, Pomeroy, Singer, Golub, Lander, Getz, Sellers, and Meyerson]{Bero2010}
+Beroukhim, R., Mermel, C.~H., Porter, D., Wei, G., Raychaudhuri, S., Donovan, J., Barretina, J., Boehm, J.~S., Dobson, J.,
+        Urashima, M., McHenry, K.~T., Pinchback, R.~M., Ligon, A.~H., Cho, Y.~J., Haery, L., Greulich, H., Reich, M., Winckler, W., Lawrence, M.~S.,
+        Weir, B.~A., Tanaka, K.~E., Chiang, D.~Y., Bass, A.~J., Loo, A., Hoffman, C., Prensner, J., Liefeld, T., Gao, Q., Yecies, D., Signoretti, S.,
+        Maher, E., Kaye, F.~J., Sasaki, H., Tepper, J.~E., Fletcher, J.~A., Tabernero, J., Baselga, J., Tsao, M.~S., Demichelis, F., Rubin, M.~A.,
+        Janne, P.~A., Daly, M.~J., Nucera, C., Levine, R.~L., Ebert, B.~L., Gabriel, S., Rustgi, A.~K., Antonescu, C.~R., Ladanyi, M., Letai, A.,
+        Garraway, L.~A., Loda, M., Beer, D.~G., True, L.~D., Okamoto, A., Pomeroy, S.~L., Singer, S., Golub, T.~R., Lander, E.~S., Getz, G., Sellers, W.~R., Meyerson, M. (2010).
+\newblock The landscape of somatic copy-number alteration across human cancers.
+\newblock {\em Nature\/}, {\bf 463}(7283), 1899--905.
+
+\bibitem[Futreal {\em et~al.}(2004)Futreal, Coin, Marshall, Down, Hubbard, Wooster, Rahman, and Stratton]{Fut2004}
+Futreal, P.~A., Coin, L., Marshall, M., Down, T., Hubbard, T., Wooster, R., Rahman, N., and Stratton, M.~R. (2004).
+A census of human cancer genes.
+\newblock {\em Nature Reviews Cancer\/}, {\bf 4}, 177--183.
+
+\bibitem[Gene Ontology Consortium(2000)Gene Ontology Consortium]{GOC2000}
+Gene Ontology Consortium (2000).
+\newblock Gene {O}ntology: tool for the unification of biology.
+\newblock {\em Nature Genetics\/}, {\bf 25}, 25--29.
+
+% \bibitem[Kallioniemi {\em et~al.}(1992)Kallioniemi, Kallioniemi, Kurisu, Thor, Chen, Smith, Waldman, Pinkel, and Gray]{Kal1992}
+% Kallioniemi, O.~P., Kallioniemi, A., Kurisu, W., Thor, A., Chen, L.~C., Smith, H.~S., Waldman, F.~M., Pinkel, D., and Gray, J.~W. (1992).
+% \newblock {ERBB2} amplification in breast cancer analyzed by fluorescence in situ hybridization.
+% \newblock {\em PNAS\/}, {\bf 89}, 5321--5325.
+
+\bibitem[Leday {\em et~al.}(2012)Leday, Van der Vaart, Van Wieringen, and Van de Wiel]{Leda2012}
+Leday, G.~G.~R., Van~der Vaart, A.~W., Van~Wieringen, W.~N. and Van~de Wiel, M.~A. (2012).
+\newblock Modeling association between {DNA} copy number and gene expression with constrained piecewise linear regression splines.
+\newblock {\em Submitted\/}.
+
+\bibitem[Louhimo {\em et~al.}(2012)Louhimo, Lepikhova, Monni, and Hautaniemi]{Louh2012}
+Louhimo, R., Lepikhova, T., Monni, O. and Hautaniemi, S. (2012).
+\newblock Comparative analysis of algorithms for integration of copy number and expression data.
+\newblock {\em Nature Methods\/}, {\bf 9}, 351--355.
+
 \bibitem[Olshen {\em et~al.}(2004)Olshen, Venkatraman, Lucito, and
   Wigler]{Ols2004}
 Olshen, A.~B., Venkatraman, E.~S., Lucito, R., and Wigler, M. (2004).
 \newblock Circular binary segmentation for the analysis of array-based {DNA} copy number data.
 \newblock {\em Biostatistics\/}, {\bf 5}, 557--572.
+
+\bibitem[Ogata {\em et~al.}(1999)Ogata, Goto, Sato, Fujibuchi, Bono, and Kanehisa]{Oga1999}
+Ogata, H., Goto, S., Sato, K., Fujibuchi, W., Bono, H., Kanehisa, M. (1999).
+\newblock {KEGG}: {K}yoto {E}ncyclopedia of {G}enes and {G}enomes
+\newblock {\em Nucleic Acids Research\/}, {\bf 27}, 29--34.
 
 \bibitem[Pollack {\em et~al.}(2002)Pollack, S\/{o}rlie, Perou, Rees, Jeffrey,
   Lonning, Tibshirani, Botstein, Borresen-Dale, and Brown]{Pol2002}
@@ -411,6 +697,16 @@ Troyanskaya, H., Cantor, M., Sherlock, G., Brown, P., Hastie, T., Tibshirani, R.
 Van~de Wiel, M.~A., Kim, K.~I., Vosse, S.~J., Van~Wieringen, W.~N., Wilting, S.~M. and Ylstra, B. (2007).
 \newblock {CGH}call: calling aberrations for array {CGH} tumor profiles.
 \newblock {\em Bioinformatics\/}, {\bf 23}, 892--894.
+
+\bibitem[Van~de~Wiel {\em et~al.}(2011)Van~de~Wiel, Picard, Van~Wieringen and Ylstra]{VdWi2011a}
+Van~de Wiel, M.~A., Picard, F., Van~Wieringen, W.~N. and Ylstra, B. (2011).
+\newblock Preprocessing and downstream analysis of microarray DNA copy number profiles.
+\newblock {\em Briefings in Bioinformatics\/}, {\bf 12}(1), 10--21.
+
+\bibitem[Van~Wieringen {\em et~al.}(2007)Van~wieringen, Van~de~Wiel and Ylstra]{VWie2007}
+Van~Wieringen, W.~N., Van~de Wiel, M.~A. and Ylstra, B. (2007).
+\newblock Normalized, segmented or called aCGH data?
+\newblock {\em Cancer Informatics\/}, {\bf 3}, 331--337.
 
 \bibitem[Van~Wieringen and Van~de Wiel(2009)Van~Wieringen and Van~de
   Wiel]{VWi2009a}
@@ -434,16 +730,16 @@ Van~Wieringen, W.~N., and Van~der Vaart, A.~W. (2011a).
 \newblock {\em Bioinformatics\/},
  {\bf 27}(4), 556--563.
 
-\bibitem[Van~Wieringen {\em et~al.}(2011b)Van~Wieringen, Unger, Leday, De Menezes, Ylstra, and Van~de Wiel]{VWie2011b}
-Van~Wieringen, W.~N., Unger, K., Leday, G.~G.~R, De Menezes, R.~X., Ylstra, B., and Van~de~Wiel, M.~A. (2011b).
+\bibitem[Van~Wieringen {\em et~al.}(2012a)Van~Wieringen, Unger, Leday, De Menezes, Ylstra, and Van~de Wiel]{VWie2012a}
+Van~Wieringen, W.~N., Unger, K., Leday, G.~G.~R, De Menezes, R.~X., Ylstra, B., and Van~de~Wiel, M.~A. (2012).
 \newblock Matching of array CGH and gene expression microarray features for the purpose of integrative genomics analysis.
-\newblock {\em submitted\/}.
+\newblock {\em BMC Bioinformatics\/}.
 
 \end{thebibliography}
 
 
 
-
+}
 
 
 

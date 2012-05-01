@@ -63,7 +63,7 @@ citEntry(entry="Article",
 
 
 citEntry(entry="Article",
-    title = "Statistical analysis of the cancer cell's molecular entropy using high-throughput data",
+    title = "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis",
     author = personList(as.person("W.N. van Wieringen"),
         as.person("K. Unger"),
         as.person("G.G.R. Leday"),
@@ -71,10 +71,10 @@ citEntry(entry="Article",
         as.person("R.X. de Menezes"),
         as.person("B. Ylstra"),
         as.person("M.A. van de Wiel")),
-    journal = "Submitted",
-    year = 2011,
+    journal = "BMC Bioinformatics",
+    year = 2012,
     textVersion =
-      paste("Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2011),",
+      paste("Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012),",
 		"Matching of array CGH and gene expression microarray features for the purpose of integrative analysis.", 
-        	"Submitted.")
+        	"BMC Bioinformatics.")
 )
