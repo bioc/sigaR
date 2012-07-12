@@ -11,7 +11,7 @@ hdEntropy(Y, method = "normal", k = 1, center = TRUE, indKnn = TRUE)
 }
 \arguments{
 \item{Y}{
-(High-dimensional) matrix. Columns are assumed to represent the samples, and rows represent the samples' genes or traits.
+(High-dimensional) matrix. Rows are assumed to represent the samples, and columns represent the samples' genes or traits.
 }
 \item{method}{
 Distributional assumption under which entropy is to be estimated.
@@ -20,7 +20,7 @@ Distributional assumption under which entropy is to be estimated.
 k-nearest neighbor parameter.
 }
 \item{center}{
-Logical indicator: should the rows of Y be centered at zero?
+Logical indicator: should the columns of Y be centered around zero?
 }
 \item{indKnn}{
 Logical indicator: should samples' individual contributions to the k-NN entropy be reported?

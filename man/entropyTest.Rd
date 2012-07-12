@@ -13,7 +13,7 @@ entropyTest(Y, id, nPerm = 1000, method = "normal", k0 = 1, k1 = 1, center = TRU
 }
 \arguments{
 \item{Y}{
-(High-dimensional) matrix. Columns are assumed to represent the samples, and rows represent the samples' genes or traits.
+(High-dimensional) matrix. Rows are assumed to represent the samples, and columns represent the samples' genes or traits.
 }
 \item{id}{
 An indicator variable for the two groups to be compared. The groups should be coded as \code{0} and \code{1}. 
@@ -32,7 +32,7 @@ k-nearest neighbor parameter for group comprising of samples indicated by a zero
 k-nearest neighbor parameter for group comprising of samples indicated by a one in the indicator variable \code{id}.
 }
 \item{center}{
-Logical indicator: should the rows of Y be centered at zero?
+Logical indicator: should the columns of Y be centered around zero?
 }
 \item{lowCiThres}{
 A value between 0 and 1. Determines speed of efficient p-value calculation. 

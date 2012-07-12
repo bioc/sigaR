@@ -45,7 +45,7 @@ that has been matched to second entry, representing the feature number of the \c
 \references{ 
 Van Wieringen, W.N., Belien, J.A.M., Vosse, S.J., Achame, E.M., Ylstra, B. (2006), "ACE-it: a tool for genome-wide integration of gene dosage and RNA expression data", \emph{Bioinformatics}, 22(15), 1919-1920.
 
-Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2011), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{submitted for publication}. 
+Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2011), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{BMC Bioinformatics}, 13:80. 
 }
 \author{ Wessel N. van Wieringen: \email{w.vanwieringen@vumc.nl} }
 \note{ 

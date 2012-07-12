@@ -29,6 +29,8 @@ Van Wieringen, W.N., Berkhof, J., Van de Wiel, M.A. (2010), "A random coefficien
 
 Van Wieringen, W.N., Van der Vaart, A.W. (2011), "Statistical analysis of the cancer cell's molecular entropy using high-throughput data", \emph{Bioinformatics}, 27(4), 556-563. 
 
-Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2011), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{submitted for publication}. 
+Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2011), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{BMC Bioinformatics}, 13:80. 
+
+Van Wieringen, W.N., Van de Wiel, M.A. (2012), "Modeling the \emph{cis}- and \emph{trans}-effect of DNA copy number aberrations on gene expression levels in a pathway", \emph{submitted for publication}. 
 }
 \keyword{ package }

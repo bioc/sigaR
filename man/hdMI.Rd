@@ -12,10 +12,10 @@ hdMI(Y, X, method = "normal", k = 1, center = TRUE, rescale = TRUE)
 }
 \arguments{
   \item{Y}{
-(High-dimensional) matrix. Columns are assumed to represent the samples, and rows represent the samples' genes or traits.
+(High-dimensional) matrix. Rows are assumed to represent the samples, and columns represent the samples' genes or traits.
 }
 \item{X}{
-(High-dimensional) matrix. Columns are assumed to represent the samples, and rows represent the samples' genes or traits. The number of columns of \code{X} must be identical to that of \code{Y}.
+(High-dimensional) matrix. Rows are assumed to represent the samples, and columns represent the samples' genes or traits. The number of rows of \code{X} must be identical to that of \code{Y}.
 }
 \item{method}{
 Distributional assumption under which mutual information is to be estimated.
@@ -24,7 +24,7 @@ Distributional assumption under which mutual information is to be estimated.
 k-nearest neighbor parameter.
 }
 \item{center}{
-Logical indicator: should the rows of \code{Y} and \code{X} be centered at zero? Applied only under the normality assumption.
+Logical indicator: should the columns (traits) of \code{Y} and \code{X} be centered at zero? Applied only under the normality assumption.
 }
 \item{rescale}{
 Logical indicator: should \code{Y} and \code{X} be rescaled to have the same scale? Applied only under the k-NN assumption.

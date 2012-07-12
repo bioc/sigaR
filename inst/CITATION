@@ -76,5 +76,19 @@ citEntry(entry="Article",
     textVersion =
       paste("Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012),",
 		"Matching of array CGH and gene expression microarray features for the purpose of integrative analysis.", 
-        	"BMC Bioinformatics.")
+        	"BMC Bioinformatics, 13:80.")
+)
+
+
+
+citEntry(entry="Article",
+    title = "Modeling the cis- and trans-effect of DNA copy number aberrations on gene expression levels in a pathway",
+    author = personList(as.person("W.N. van Wieringen"),
+        as.person("M.A. van de Wiel")),
+    journal = "submitted",
+    year = 2012,
+    textVersion =
+      paste("Van Wieringen, W.N., Van de Wiel, M.A. (2012),",
+		"Modeling the cis- and trans-effect of DNA copy number aberrations on gene expression levels in a pathway.", 
+        	"submitted.")
 )

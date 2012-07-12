@@ -15,13 +15,17 @@ importFrom(graphics, abline, axis, barplot, box, hist, layout, mtext,
 
 importFrom(corpcor, pcor.shrink)
 
+importFrom(igraph, E, graph.adjacency, layout.circle, plot.igraph)
+
 importFrom(marray, maPalette)
 
-importFrom(MASS, Null)
+importFrom(MASS, Null, ginv)
 
 importFrom(methods, "@<-", new)
 
 importFrom(mvtnorm, rmvnorm)
+
+importFrom(penalized, penalized)
 
 importFrom(quadprog, solve.QP)
 
@@ -31,7 +35,7 @@ importFrom(stats, dist, ecdf, mad, median, quantile, sd)
 
 exportPattern("^[^\\.]")
 
-exportClasses(cisTest, entTest, miTest, rcmFit, rcmTest)
+exportClasses(cisTest, entTest, miTest, pathwayFit, rcmFit, rcmTest)
 
 exportMethods(RCMrandom, summary)
 
@@ -41,6 +45,8 @@ export(cghCall2cghSeg, cghCall2maximumSubset, cghCall2order, cghCall2subset, cgh
 	CNGEheatmaps, entropyTest, expandMatching2singleIDs, ExpressionSet2order,
 	ExpressionSet2subset, ExpressionSet2weightedSubset, getSegFeatures,
 	hdEntropy, hdMI, matchAnn2Ann, matchCGHcall2ExpressionSet, merge2cghCalls,
-	merge2ExpressionSets, mutInfTest, nBreakpoints, profilesPlot, RCMestimation,
+	merge2ExpressionSets, mutInfTest, nBreakpoints,
+	pathway1sample, pathway1sample, pathwayPlot, profilesPlot, RCMestimation,
 	RCMrandom, RCMtest, splitMatchingAtBreakpoints, uniqGenomicInfo)
+
 

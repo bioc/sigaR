@@ -1,3 +1,5 @@
+setClass("pathwayFit", representation(Cis="numeric", Trans="matrix", Trans1="matrix", Trans2="matrix", Sigma="numeric", lambda1="matrix", lambdaF="matrix", constr="logical", epsilon="numeric", method="character"))
+
 setClass("cisTest", representation(geneInfo="data.frame", geneId="numeric", comparison="numeric", av.prob1="numeric", av.prob2="numeric", effectSize="numeric", R2="numeric", regId="numeric", beginReg="numeric", endReg="numeric", shrinkage="numeric", p.value="numeric", adjP.value="numeric", analysisType="character", testStatistic="character", nPerm="numeric"))
 
 setClass("entTest", representation(statistic="numeric", p.value="numeric", null.dist="numeric", nperm="numeric", remark="character"))
