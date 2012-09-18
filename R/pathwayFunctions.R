@@ -170,7 +170,7 @@ pathway1sample <- function(Y, X, lambda1=1, constr=TRUE, startCis=numeric(), sta
 	lambda1vec <- c(0, rep(lambda1, ncol(Y)-1))
 	for (j in 1:ncol(Y)){ 
 		# in case regularization varies per parameter
-		if (as.character(class(lambda1)) == "matrix"){ lambda1vec <- c(0, lambda1[-j, j]) }
+		if (as.character(class(lambda1)) == "matrix"){ lambda1vec <- c(0, lambda1[j, -j]) }
 	
 		# lasso estimation
 		if (startValues){
@@ -183,6 +183,7 @@ pathway1sample <- function(Y, X, lambda1=1, constr=TRUE, startCis=numeric(), sta
 		transHat[j, -j] <- -coef(penFit, "all")[-1]
 		betaHat[j] <- coef(penFit, "all")[1]
 		SigmaHat[j] <- var(residuals(penFit))
+		print(j)
 	}
 	return(new("pathwayFit", Cis=betaHat, Trans=transHat, Trans1=matrix(), Trans2=matrix(), Sigma=SigmaHat, lambda1=data.matrix(lambda1), lambdaF=matrix(), epsilon=numeric(), method=character(), constr=constr)) 
 }

@@ -1,3 +1,683 @@
+
+
+cghCall2maximumSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus=1, verbose=TRUE){
+   	############################################################################
+	# function shrinks cghCall-object to a subset of the features
+	############################################################################
+
+	# check input
+	if (verbose){ cat("perform input checks...", "\n") }
+	if (as.character(class(CNdata)) != "cghCall"){ stop("CNdata not of class cghCall.") }
+	# if (!(as.character(class(featureSubset))=="numeric" | as.character(class(featureSubset))=="integer" )){ stop("featureSubset of wrong class.") }
+	# if (!(as.character(class(weights))=="numeric" | as.character(class(weights))=="integer" )){ stop("weights of wrong class.") }
+	# if ( !(length(featureSubset) >= 1) ){ stop("featureSubset contains no row numbers.") }
+	# if ( !(min(featureSubset) >= 1 | max(featureSubset) <= nrow(fData(CNdata))) ){ stop("featureSubset contains illegal row numbers.") }
+	# if ( length(featureSubset) != length(weights) ){ stop("featureSubset and weights of unequal length.") }
+
+	if (!(as.character(class(chr))=="numeric" | as.character(class(chr))=="integer" )){ stop("chr of wrong class.") }
+	if (length(chr) != 1){ stop("chr of wrong length.") }
+	if ( !(chr >= 1 | chr <= ncol(fData(CNdata))) ){ stop("chr exceeds number of columns in featureData.") }
+	if (!(as.character(class(bpstart))=="numeric" | as.character(class(bpstart))=="integer" )){ stop("bpstart of wrong class.") }
+	if (length(bpstart) != 1){ stop("bpstart of wrong length.") }
+	if ( !(bpstart >= 1 | bpstart <= ncol(fData(CNdata))) ){ stop("bpstart exceeds number of columns in featureData.") }
+	if (!(as.character(class(bpend))=="numeric" | as.character(class(bpend))=="integer" )){ stop("bpend of wrong class.") }
+	if (length(bpend) != 1){ stop("bpend of wrong length.") }
+	if ( !(bpend >= 1 | chr <= ncol(fData(CNdata))) ){ stop("bpend exceeds number of columns in featureData.") }
+
+	# disecting the cghCall-object
+	amplifications <- FALSE
+	copynumberMat <- copynumber(CNdata)
+	segmentedMat <- segmented(CNdata)
+	problossMat <- probloss(CNdata)
+	probnormMat <- probnorm(CNdata)
+	probgainMat <- probgain(CNdata)
+	if (!is.null(probamp(CNdata))){ probampMat <- probamp(CNdata); amplifications <- TRUE }
+	if (!is.null(probdloss(CNdata))){ probdlossMat <- probdloss(CNdata); doubleLoss <- TRUE }
+	CNann <- fData(CNdata)
+	rm(CNdata)
+	gc()
+
+	# identify maximum deviating features
+	if (verbose){ cat("identify maximum deviating features ...", "\n") }
+	if (ncpus == 1){ idMat <- t(sapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) }
+	if (ncpus > 1){ 
+		sfInit(parallel=TRUE, cpus=ncpus)
+		sfLibrary(sigaR, verbose=FALSE)
+		idMat <- t(sfSapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) 
+	}
+
+	# subsetting of segmented data
+	if (verbose){ cat("generate subsetted matrices ...", "\n") }
+	if (ncpus == 1){ copynumberMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, copynumberMat, simplify=TRUE)) }
+	if (ncpus > 1){ copynumberMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, copynumberMat, simplify=TRUE)) }
+	if (ncpus == 1){ segmentedMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, segmentedMat, simplify=TRUE)) }
+	if (ncpus > 1){ segmentedMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, segmentedMat, simplify=TRUE)) }
+	if (ncpus == 1){ problossMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, problossMat, simplify=TRUE)) }
+	if (ncpus > 1){ problossMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, problossMat, simplify=TRUE)) }
+	if (ncpus == 1){ probnormMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probnormMat, simplify=TRUE)) }
+	if (ncpus > 1){ probnormMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probnormMat, simplify=TRUE)) }
+	if (ncpus == 1){ probgainMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probgainMat, simplify=TRUE)) }
+	if (ncpus > 1){ probgainMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probgainMat, simplify=TRUE)) }
+	if (amplifications){ 
+		if (ncpus == 1){ probampMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probampMat, simplify=TRUE)) }
+		if (ncpus > 1){ probampMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probampMat, simplify=TRUE)) }
+	}
+	if (doubleLoss){ 
+		if (ncpus == 1){ probdlossMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probdlossMat, simplify=TRUE)) }
+		if (ncpus > 1){ probdlossMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probdlossMat, simplify=TRUE)) }
+	}
+
+	# subsetting of call data
+	if (verbose){ cat("generate subsetted call matrices ...", "\n")	}
+	callsMat <- numeric()
+	for (i in 1:ncol(problossMat)){
+		if (!amplifications & !doubleLoss){
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
+		} 
+		if (amplifications & !doubleLoss){
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
+		}
+		if (!amplifications & doubleLoss){
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(probdlossMat[,i], problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 3) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(probdlossMat[,i], problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 3) }
+		}
+		if (amplifications & doubleLoss){
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(probdlossMat[,i], problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 3) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(probdlossMat[,i], problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 3) }
+		}
+	}	
+
+	# weighted subsetting of annotation data
+	if (verbose){ cat("reorganize annotation ...", "\n") }
+	if (ncpus == 1){ annotation <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
+	if (ncpus > 1){	annotation <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
+	colnames(annotation) <- c("Chromosome", "Start", "End")
+	if (ncpus == 1){ rownames(annotation) <- as.character(sapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
+	if (ncpus > 1){	rownames(annotation) <- as.character(sfSapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
+	if (length(rownames(annotation)) != length(unique(rownames(annotation)))){
+		warning("modified feature names are returned")
+		newRowNames <- rownames(annotation)
+		slh <- rep(1, length(newRowNames))
+		for (i in 1:length(unique(newRowNames))){
+			ids <- which(newRowNames == unique(newRowNames)[i])
+			slh[ids] <- 1:length(ids)
+		}
+		newRowNames <- paste(newRowNames, slh, sep="__")		
+		rownames(annotation) <- newRowNames
+	}
+	fInfo <- new("AnnotatedDataFrame", data=data.frame(annotation), varMetadata=data.frame(labelDescription=c("Chromosome", "Start", "End")))
+	if (ncpus > 1){ sfStop() }
+
+	rownames(copynumberMat) <- rownames(annotation)
+	rownames(segmentedMat) <- rownames(annotation)
+	rownames(problossMat) <- rownames(annotation)
+	rownames(probnormMat) <- rownames(annotation)
+	rownames(probgainMat) <- rownames(annotation)
+	rownames(callsMat) <- rownames(annotation)
+	if (amplifications){ rownames(probampMat) <- rownames(annotation) }
+	if (doubleLoss){ rownames(probdlossMat) <- rownames(annotation) }
+
+	# make cghCall object
+	if (verbose){ cat("merge into cghCall object ...", "\n") }
+	if (!amplifications & !doubleLoss){ 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	}
+	if (amplifications & !doubleLoss){ 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			probamp = data.matrix(data.frame(probampMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	}
+	if (!amplifications & doubleLoss){ 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probdloss = data.matrix(data.frame(probdlossMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	}
+	if (amplifications & doubleLoss){ 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probdloss = data.matrix(data.frame(probdlossMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			probamp = data.matrix(data.frame(probampMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	}
+	return(CNdata)
+}
+
+
+
+
+
+
+cghCall2weightedSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus=1, verbose=TRUE){
+   	############################################################################
+	# function shrinks cghCall-object to a subset of the features
+	############################################################################
+
+	# check input
+	if (verbose){ cat("perform input checks...", "\n") }
+	if (as.character(class(CNdata)) != "cghCall"){ stop("CNdata not of class cghCall.") }
+	# if (!(as.character(class(featureSubset))=="numeric" | as.character(class(featureSubset))=="integer" )){ stop("featureSubset of wrong class.") }
+	# if (!(as.character(class(weights))=="numeric" | as.character(class(weights))=="integer" )){ stop("weights of wrong class.") }
+	# if ( !(length(featureSubset) >= 1) ){ stop("featureSubset contains no row numbers.") }
+	# if ( !(min(featureSubset) >= 1 | max(featureSubset) <= nrow(fData(CNdata))) ){ stop("featureSubset contains illegal row numbers.") }
+	# if ( length(featureSubset) != length(weights) ){ stop("featureSubset and weights of unequal length.") }
+
+	if (!(as.character(class(chr))=="numeric" | as.character(class(chr))=="integer" )){ stop("chr of wrong class.") }
+	if (length(chr) != 1){ stop("chr of wrong length.") }
+	if ( !(chr >= 1 | chr <= ncol(fData(CNdata))) ){ stop("chr exceeds number of columns in featureData.") }
+	if (!(as.character(class(bpstart))=="numeric" | as.character(class(bpstart))=="integer" )){ stop("bpstart of wrong class.") }
+	if (length(bpstart) != 1){ stop("bpstart of wrong length.") }
+	if ( !(bpstart >= 1 | bpstart <= ncol(fData(CNdata))) ){ stop("bpstart exceeds number of columns in featureData.") }
+	if (!(as.character(class(bpend))=="numeric" | as.character(class(bpend))=="integer" )){ stop("bpend of wrong class.") }
+	if (length(bpend) != 1){ stop("bpend of wrong length.") }
+	if ( !(bpend >= 1 | chr <= ncol(fData(CNdata))) ){ stop("bpend exceeds number of columns in featureData.") }
+
+	# disecting the cghCall-object
+	amplifications <- FALSE
+	doubleLoss <- FALSE
+	copynumberMat <- copynumber(CNdata)
+	segmentedMat <- segmented(CNdata)
+	problossMat <- probloss(CNdata)
+	probnormMat <- probnorm(CNdata)
+	probgainMat <- probgain(CNdata)
+	if (!is.null(probamp(CNdata))){ probampMat <- probamp(CNdata); amplifications <- TRUE }
+	if (!is.null(probdloss(CNdata))){ probdlossMat <- probdloss(CNdata); doubleLoss <- TRUE }
+	CNann <- fData(CNdata)
+	rm(CNdata)
+	gc()
+
+	# weighted subsetting of raw copy number data
+	if (verbose){ cat("generate subsetted raw copy number matrix ...", "\n") }
+	if (ncpus == 1){ copynumberMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, copynumberMat, simplify=TRUE))	}
+	if (ncpus > 1){
+		sfInit(parallel=TRUE, cpus=ncpus)
+		sfLibrary(sigaR, verbose=FALSE)
+		copynumberMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, copynumberMat, simplify=TRUE))	
+	}
+
+	# weighted subsetting of segmented data
+	if (verbose){ cat("generate subsetted segmented matrix ...", "\n") }
+	if (ncpus == 1){ segmentedMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, segmentedMat, simplify=TRUE)) }
+	if (ncpus > 1){ segmentedMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, segmentedMat, simplify=TRUE)) }
+
+	# weighted subsetting of call probability data
+	if (verbose){ cat("generate subsetted call probability matrices ...", "\n") }
+	if (ncpus == 1){ problossMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, problossMat, simplify=TRUE)) }
+	if (ncpus > 1){ problossMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, problossMat, simplify=TRUE)) }
+	if (ncpus == 1){ probnormMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probnormMat, simplify=TRUE)) }
+	if (ncpus > 1){ probnormMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probnormMat, simplify=TRUE)) }
+	if (ncpus == 1){ probgainMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probgainMat, simplify=TRUE)) }
+	if (ncpus > 1){ probgainMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probgainMat, simplify=TRUE)) }
+	if (amplifications){ 
+		if (ncpus == 1){ probampMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probampMat, simplify=TRUE)) }
+		if (ncpus > 1){ probampMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probampMat, simplify=TRUE)) }
+	}
+	if (doubleLoss){ 
+		if (ncpus == 1){ probdlossMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probdlossMat, simplify=TRUE)) }
+		if (ncpus > 1){ probdlossMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probdlossMat, simplify=TRUE)) }
+	}
+
+	# subsetting of call data
+	if (verbose){ cat("generate subsetted call matrices ...", "\n")	}
+	callsMat <- numeric()
+	for (i in 1:ncol(problossMat)){
+		if (!amplifications & !doubleLoss){
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
+		} 
+		if (amplifications & !doubleLoss){
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
+		}
+		if (!amplifications & doubleLoss){
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(probdlossMat[,i], problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 3) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(probdlossMat[,i], problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 3) }
+		}
+		if (amplifications & doubleLoss){
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(probdlossMat[,i], problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 3) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(probdlossMat[,i], problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 3) }
+		}
+	}	
+
+	# weighted subsetting of annotation data
+	if (verbose){ cat("reorganize annotation ...", "\n") }
+	if (ncpus == 1){ annotation <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
+	if (ncpus > 1){	annotation <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
+	colnames(annotation) <- c("Chromosome", "Start", "End")
+	if (ncpus == 1){ rownames(annotation) <- as.character(sapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
+	if (ncpus > 1){	rownames(annotation) <- as.character(sfSapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
+	if (length(rownames(annotation)) != length(unique(rownames(annotation)))){
+		warning("modified feature names are returned")
+		newRowNames <- rownames(annotation)
+		slh <- rep(1, length(newRowNames))
+		for (i in 1:length(unique(newRowNames))){
+			ids <- which(newRowNames == unique(newRowNames)[i])
+			slh[ids] <- 1:length(ids)
+		}
+		newRowNames <- paste(newRowNames, slh, sep="__")		
+		rownames(annotation) <- newRowNames
+	}
+	fInfo <- new("AnnotatedDataFrame", data=data.frame(annotation), varMetadata=data.frame(labelDescription=c("Chromosome", "Start", "End")))
+	if (ncpus > 1){ sfStop() }
+
+	rownames(copynumberMat) <- rownames(annotation)
+	rownames(segmentedMat) <- rownames(annotation)
+	rownames(problossMat) <- rownames(annotation)
+	rownames(probnormMat) <- rownames(annotation)
+	rownames(probgainMat) <- rownames(annotation)
+	rownames(callsMat) <- rownames(annotation)
+	if (amplifications){ rownames(probampMat) <- rownames(annotation) }
+	if (doubleLoss){ rownames(probdlossMat) <- rownames(annotation) }
+
+	# make cghCall object
+	if (verbose){ cat("merge into cghCall object ...", "\n") }
+	if (!amplifications & !doubleLoss){ 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	}
+	if (amplifications & !doubleLoss){ 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			probamp = data.matrix(data.frame(probampMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	}
+	if (!amplifications & doubleLoss){ 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probdloss = data.matrix(data.frame(probdlossMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	}
+	if (amplifications & doubleLoss){ 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probdloss = data.matrix(data.frame(probdlossMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			probamp = data.matrix(data.frame(probampMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	}
+	return(CNdata)
+}
+
+
+
+
+cghCall2maximumSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus=1, verbose=TRUE){
+   	############################################################################
+	# function shrinks cghCall-object to a subset of the features
+	############################################################################
+
+	# check input
+	if (verbose){ cat("perform input checks...", "\n") }
+	if (as.character(class(CNdata)) != "cghCall"){ stop("CNdata not of class cghCall.") }
+	# if (!(as.character(class(featureSubset))=="numeric" | as.character(class(featureSubset))=="integer" )){ stop("featureSubset of wrong class.") }
+	# if (!(as.character(class(weights))=="numeric" | as.character(class(weights))=="integer" )){ stop("weights of wrong class.") }
+	# if ( !(length(featureSubset) >= 1) ){ stop("featureSubset contains no row numbers.") }
+	# if ( !(min(featureSubset) >= 1 | max(featureSubset) <= nrow(fData(CNdata))) ){ stop("featureSubset contains illegal row numbers.") }
+	# if ( length(featureSubset) != length(weights) ){ stop("featureSubset and weights of unequal length.") }
+
+	if (!(as.character(class(chr))=="numeric" | as.character(class(chr))=="integer" )){ stop("chr of wrong class.") }
+	if (length(chr) != 1){ stop("chr of wrong length.") }
+	if ( !(chr >= 1 | chr <= ncol(fData(CNdata))) ){ stop("chr exceeds number of columns in featureData.") }
+	if (!(as.character(class(bpstart))=="numeric" | as.character(class(bpstart))=="integer" )){ stop("bpstart of wrong class.") }
+	if (length(bpstart) != 1){ stop("bpstart of wrong length.") }
+	if ( !(bpstart >= 1 | bpstart <= ncol(fData(CNdata))) ){ stop("bpstart exceeds number of columns in featureData.") }
+	if (!(as.character(class(bpend))=="numeric" | as.character(class(bpend))=="integer" )){ stop("bpend of wrong class.") }
+	if (length(bpend) != 1){ stop("bpend of wrong length.") }
+	if ( !(bpend >= 1 | chr <= ncol(fData(CNdata))) ){ stop("bpend exceeds number of columns in featureData.") }
+
+	# disecting the cghCall-object
+	amplifications <- FALSE
+	copynumberMat <- copynumber(CNdata)
+	segmentedMat <- segmented(CNdata)
+	problossMat <- probloss(CNdata)
+	probnormMat <- probnorm(CNdata)
+	probgainMat <- probgain(CNdata)
+	if (!is.null(probamp(CNdata))){ probampMat <- probamp(CNdata); amplifications <- TRUE }
+	CNann <- fData(CNdata)
+	rm(CNdata)
+	gc()
+
+	# identify maximum deviating features
+	if (verbose){ cat("generate subsetted segmented matrix ...", "\n") }
+	if (ncpus == 1){ idMat <- t(sapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) }
+	if (ncpus > 1){ 
+		sfInit(parallel=TRUE, cpus=ncpus)
+		sfLibrary(sigaR, verbose=FALSE)
+		idMat <- t(sfSapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) 
+	}
+
+	# subsetting of segmented data
+	if (ncpus == 1){ copynumberMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, copynumberMat, simplify=TRUE)) }
+	if (ncpus > 1){ copynumberMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, copynumberMat, simplify=TRUE)) }
+	if (ncpus == 1){ segmentedMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, segmentedMat, simplify=TRUE)) }
+	if (ncpus > 1){ segmentedMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, segmentedMat, simplify=TRUE)) }
+	if (ncpus == 1){ problossMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, problossMat, simplify=TRUE)) }
+	if (ncpus > 1){ problossMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, problossMat, simplify=TRUE)) }
+	if (ncpus == 1){ probnormMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probnormMat, simplify=TRUE)) }
+	if (ncpus > 1){ probnormMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probnormMat, simplify=TRUE)) }
+	if (ncpus == 1){ probgainMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probgainMat, simplify=TRUE)) }
+	if (ncpus > 1){ probgainMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probgainMat, simplify=TRUE)) }
+	if (amplifications){ 
+		if (ncpus == 1){ probampMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probampMat, simplify=TRUE)) }
+		if (ncpus > 1){ probampMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probampMat, simplify=TRUE)) }
+	}
+
+	# subsetting of call data
+	if (verbose){ cat("generate subsetted call matrices ...", "\n")	}
+	callsMat <- numeric()
+	for (i in 1:ncol(problossMat)){
+		if (!amplifications){
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
+		} else {
+			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
+			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
+		}
+	}	
+
+	# weighted subsetting of annotation data
+	if (verbose){ cat("reorganize annotation ...", "\n") }
+	if (ncpus == 1){ annotation <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
+	if (ncpus > 1){	annotation <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
+	colnames(annotation) <- c("Chromosome", "Start", "End")
+	if (ncpus == 1){ rownames(annotation) <- as.character(sapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
+	if (ncpus > 1){	rownames(annotation) <- as.character(sfSapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
+	if (length(rownames(annotation)) != length(unique(rownames(annotation)))){
+		warning("modified feature names are returned")
+		newRowNames <- rownames(annotation)
+		slh <- rep(1, length(newRowNames))
+		for (i in 1:length(unique(newRowNames))){
+			ids <- which(newRowNames == unique(newRowNames)[i])
+			slh[ids] <- 1:length(ids)
+		}
+		newRowNames <- paste(newRowNames, slh, sep="__")		
+		rownames(annotation) <- newRowNames
+	}
+	fInfo <- new("AnnotatedDataFrame", data=data.frame(annotation), varMetadata=data.frame(labelDescription=c("Chromosome", "Start", "End")))
+	if (ncpus > 1){ sfStop() }
+
+	rownames(copynumberMat) <- rownames(annotation)
+	rownames(segmentedMat) <- rownames(annotation)
+	rownames(problossMat) <- rownames(annotation)
+	rownames(probnormMat) <- rownames(annotation)
+	rownames(probgainMat) <- rownames(annotation)
+	rownames(callsMat) <- rownames(annotation)
+	if (amplifications){ rownames(probampMat) <- rownames(annotation) }
+
+	# make cghCall object
+	if (verbose){ cat("merge into cghCall object ...", "\n") }
+	if (!amplifications){ 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	} else { 
+		CNdata <- new('cghCall', 
+			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
+			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
+			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
+			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
+			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
+			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
+			probamp = data.matrix(data.frame(probampMat, row.names=rownames(annotation))), 
+			featureData = fInfo) 
+	}
+	return(CNdata)
+}
+
+
+cghCall2subset <- function(CNdata, featureSubset, verbose=TRUE){
+   	############################################################################
+	# function shrinks cghCall-object to a subset of the features
+	############################################################################
+
+	# check input
+	if (verbose){ cat("perform input checks...", "\n") }
+	if (as.character(class(CNdata)) != "cghCall"){ stop("CNdata not of class cghCall.") }
+	if (!(as.character(class(featureSubset))=="numeric" | as.character(class(featureSubset))=="integer" )){ stop("featureSubset of wrong class.") }
+	if ( !(length(featureSubset) >= 1) ){ stop("featureSubset contains no row numbers.") }
+	if ( !(min(featureSubset) >= 1 | max(featureSubset) <= nrow(fData(CNdata))) ){ stop("featureSubset contains illegal row numbers.") }
+
+	# sort out new annotation info
+	fd <- fData(CNdata)[featureSubset, , drop=FALSE]
+	newRowNames <- rownames(copynumber(CNdata))[featureSubset]
+	if (length(newRowNames) != length(unique(newRowNames))){
+		warning("modified feature names are returned")
+		slh <- rep(1, length(newRowNames))
+		for (i in 1:length(unique(newRowNames))){
+			ids <- which(newRowNames == unique(newRowNames)[i])
+			slh[ids] <- 1:length(ids)
+		}
+		newRowNames <- paste(newRowNames, slh, sep="__")		
+	}
+	rownames(fd) <- newRowNames
+	# sNames <- sampleNames(CNdata)
+	metaData <- data.frame(labelDescription=colnames(fd)) 
+	fd <- new("AnnotatedDataFrame", data=data.frame(fd), varMetadata=metaData)
+
+	if (is.null(probdloss(CNdata)[featureSubset, , drop=FALSE])){ 
+		if (is.null(probamp(CNdata)[featureSubset, , drop=FALSE])){ 
+			CNdata <- new('cghCall', 
+				copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				segmented = data.matrix(data.frame(segmented(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				calls = data.matrix(data.frame(calls(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probloss = data.matrix(data.frame(probloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probnorm = data.matrix(data.frame(probnorm(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probgain = data.matrix(data.frame(probgain(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				featureData = fd) 
+		} else { 
+			CNdata <- new('cghCall', 
+				copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				segmented = data.matrix(data.frame(segmented(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				calls = data.matrix(data.frame(calls(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probloss = data.matrix(data.frame(probloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probnorm = data.matrix(data.frame(probnorm(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probgain = data.matrix(data.frame(probgain(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probamp = data.matrix(data.frame(probamp(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				featureData = fd) 
+		}
+	} else {
+		if (is.null(probamp(CNdata)[featureSubset, , drop=FALSE])){ 
+			CNdata <- new('cghCall', 
+				copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				segmented = data.matrix(data.frame(segmented(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				calls = data.matrix(data.frame(calls(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probdloss = data.matrix(data.frame(probdloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)),  
+				probloss = data.matrix(data.frame(probloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)),
+				probnorm = data.matrix(data.frame(probnorm(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probgain = data.matrix(data.frame(probgain(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				featureData = fd) 
+		} else { 
+			CNdata <- new('cghCall', 
+				copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				segmented = data.matrix(data.frame(segmented(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				calls = data.matrix(data.frame(calls(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probdloss = data.matrix(data.frame(probdloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)),  
+				probloss = data.matrix(data.frame(probloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probnorm = data.matrix(data.frame(probnorm(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probgain = data.matrix(data.frame(probgain(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				probamp = data.matrix(data.frame(probamp(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
+				featureData = fd) 
+		}		
+	}
+	return(CNdata)
+}
+
+
+
+
+
+merge2cghCalls <- function(CNdata1, CNdata2, verbose=TRUE){
+   	############################################################################
+	# function merges cghCall-objects into one cghCall-object
+	############################################################################
+
+	# check input
+	if (verbose){ cat("perform input checks...", "\n") }
+	if (as.character(class(CNdata1)) != "cghCall"){ stop("CNdata1 not of class cghCall.") }
+	if (as.character(class(CNdata2)) != "cghCall"){ stop("CNdata2 not of class cghCall.") }
+	if ( dim(CNdata1)[2] != dim(CNdata2)[2] ){ stop("CNdata1 and CNdata2 have an unequal number of samples.") }
+	if ( dim(fData(CNdata1))[2] != dim(fData(CNdata2))[2] ){ stop("CNdata1 and CNdata2 have an unequal annotation columns.") }
+	amp1 <- is.null(probamp(CNdata1))
+	amp2 <- is.null(probamp(CNdata2))
+	if (!(amp1 == amp2)){ stop("One of the cghCall-objects has amplification probabilities whereas the other has not.") }
+
+	# prepare new annotation
+	annotation <- rbind(fData(CNdata1), fData(CNdata2))
+	newRowNames <- c(rownames(fData(CNdata1)), rownames(fData(CNdata2)))
+	if (length(newRowNames) != length(unique(newRowNames))){
+		warning("modified feature names are returned")
+		slh <- rep(1, length(newRowNames))
+		for (i in 1:length(unique(newRowNames))){
+			ids <- which(newRowNames == unique(newRowNames)[i])
+			slh[ids] <- 1:length(ids)
+		}
+		newRowNames <- paste(newRowNames, slh, sep="__")		
+	}
+	rownames(annotation) <- newRowNames
+	metaData <- data.frame(labelDescription=colnames(annotation)) 
+	annotation <- new("AnnotatedDataFrame", data=data.frame(annotation), varMetadata=metaData)
+
+	if (is.null(probdloss(CNdata1))){ 
+		if (is.null(probamp(CNdata1))){ 
+			CNdata <- new('cghCall', 
+				copynumber = data.matrix(data.frame(rbind(copynumber(CNdata1), copynumber(CNdata2)), row.names=newRowNames)), 
+				segmented = data.matrix(data.frame(rbind(segmented(CNdata1), segmented(CNdata2)), row.names=newRowNames)), 
+				calls = data.matrix(data.frame(rbind(calls(CNdata1), calls(CNdata2)), row.names=newRowNames)), 
+				probloss = data.matrix(data.frame(rbind(probloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
+				probnorm = data.matrix(data.frame(rbind(probnorm(CNdata1), probnorm(CNdata2)), row.names=newRowNames)), 
+				probgain = data.matrix(data.frame(rbind(probgain(CNdata1), probgain(CNdata2)), row.names=newRowNames)), 
+				featureData = annotation) 
+		} else { 
+			CNdata <- new('cghCall', 
+				copynumber = data.matrix(data.frame(rbind(copynumber(CNdata1), copynumber(CNdata2)), row.names=newRowNames)), 
+				segmented = data.matrix(data.frame(rbind(segmented(CNdata1), segmented(CNdata2)), row.names=newRowNames)), 
+				calls = data.matrix(data.frame(rbind(calls(CNdata1), calls(CNdata2)), row.names=newRowNames)), 
+				probloss = data.matrix(data.frame(rbind(probloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
+				probnorm = data.matrix(data.frame(rbind(probnorm(CNdata1), probnorm(CNdata2)), row.names=newRowNames)), 
+				probgain = data.matrix(data.frame(rbind(probgain(CNdata1), probgain(CNdata2)), row.names=newRowNames)), 
+				probamp = data.matrix(data.frame(rbind(probamp(CNdata1), probamp(CNdata2)), row.names=newRowNames)), 
+				featureData = annotation) 
+		}
+	} else {
+		if (is.null(probamp(CNdata1))){ 
+			CNdata <- new('cghCall', 
+				copynumber = data.matrix(data.frame(rbind(copynumber(CNdata1), copynumber(CNdata2)), row.names=newRowNames)), 
+				segmented = data.matrix(data.frame(rbind(segmented(CNdata1), segmented(CNdata2)), row.names=newRowNames)), 
+				calls = data.matrix(data.frame(rbind(calls(CNdata1), calls(CNdata2)), row.names=newRowNames)), 
+				probdloss = data.matrix(data.frame(rbind(probdloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
+				probloss = data.matrix(data.frame(rbind(probloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
+				probnorm = data.matrix(data.frame(rbind(probnorm(CNdata1), probnorm(CNdata2)), row.names=newRowNames)), 
+				probgain = data.matrix(data.frame(rbind(probgain(CNdata1), probgain(CNdata2)), row.names=newRowNames)), 
+				featureData = annotation) 
+		} else { 
+			CNdata <- new('cghCall', 
+				copynumber = data.matrix(data.frame(rbind(copynumber(CNdata1), copynumber(CNdata2)), row.names=newRowNames)), 
+				segmented = data.matrix(data.frame(rbind(segmented(CNdata1), segmented(CNdata2)), row.names=newRowNames)), 
+				calls = data.matrix(data.frame(rbind(calls(CNdata1), calls(CNdata2)), row.names=newRowNames)), 
+				probdloss = data.matrix(data.frame(rbind(probdloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
+				probloss = data.matrix(data.frame(rbind(probloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
+				probnorm = data.matrix(data.frame(rbind(probnorm(CNdata1), probnorm(CNdata2)), row.names=newRowNames)), 
+				probgain = data.matrix(data.frame(rbind(probgain(CNdata1), probgain(CNdata2)), row.names=newRowNames)), 
+				probamp = data.matrix(data.frame(rbind(probamp(CNdata1), probamp(CNdata2)), row.names=newRowNames)), 
+				featureData = annotation) 
+		}
+	}
+
+	return(CNdata)
+}
+
+
+
+
+cghCall2order <- function(CNdata, chr, bpstart, verbose=TRUE){
+   	###########################################################################################
+	# function that orders cghCall-object genomically
+	###########################################################################################
+
+	# check input
+	if (verbose){ cat("perform input checks...", "\n") }
+	if (as.character(class(CNdata)) != "cghCall"){ stop("CNdata not of class cghCall.") }
+	if (!(as.character(class(chr))=="numeric" | as.character(class(chr))=="integer" )){ stop("chr of wrong class.") }
+	if (length(chr) != 1){ stop("chr of wrong length.") }
+	if ( !(chr >= 1 | chr <= ncol(fData(CNdata))) ){ stop("chr exceeds number of columns in featureData.") }
+	if (!(as.character(class(bpstart))=="numeric" | as.character(class(bpstart))=="integer" )){ stop("bpstart of wrong class.") }
+	if (length(bpstart) != 1){ stop("bpstart of wrong length.") }
+	if ( !(bpstart >= 1 | bpstart <= ncol(fData(CNdata))) ){ stop("GEbpstart exceeds number of columns in featureData.") }
+
+	# extract annotation data for ordering
+	CNann <- fData(CNdata)[, c(chr, bpstart), drop=FALSE]
+
+	# in case columns are of wrong class ....
+	for (i in 1:2){
+		if (is.factor(CNann[,i])){ CNann[,i] <- as.numeric(levels(CNann[,i]))[CNann[,i]] }
+		if (is.character(CNann[,i])){ CNann[,i] <- as.numeric(CNann[,i]) }
+	}
+
+	# order ExpressionSet-object genomically	
+	fData(CNdata) <- fData(CNdata)[order(CNann[,1], CNann[,2]),]
+	copynumber(CNdata) <- copynumber(CNdata)[order(CNann[,1], CNann[,2]),]
+	segmented(CNdata) <- segmented(CNdata)[order(CNann[,1], CNann[,2]),]
+	calls(CNdata) <- calls(CNdata)[order(CNann[,1], CNann[,2]),]
+	probloss(CNdata) <- probloss(CNdata)[order(CNann[,1], CNann[,2]),]
+	probnorm(CNdata) <- probnorm(CNdata)[order(CNann[,1], CNann[,2]),]
+	probgain(CNdata) <- probgain(CNdata)[order(CNann[,1], CNann[,2]),]
+	if (is.null(probamp(CNdata))){ } else { probamp(CNdata) <- probamp(CNdata)[order(CNann[,1], CNann[,2]),] }
+	if (is.null(probdloss(CNdata))){ } else { probdloss(CNdata) <- probdloss(CNdata)[order(CNann[,1], CNann[,2]),] }
+	return(CNdata)
+}
+
+
+
 cghSeg2order <- function(CNdata, chr, bpstart, verbose=TRUE){
    	###########################################################################################
 	# function that orders cghCall-object genomically
@@ -344,190 +1024,6 @@ merge2ExpressionSets <- function(GEdata1, GEdata2, verbose=TRUE){
 
 
 
-merge2cghCalls <- function(CNdata1, CNdata2, verbose=TRUE){
-   	############################################################################
-	# function merges cghCall-objects into one cghCall-object
-	############################################################################
-
-	# check input
-	if (verbose){ cat("perform input checks...", "\n") }
-	if (as.character(class(CNdata1)) != "cghCall"){ stop("CNdata1 not of class cghCall.") }
-	if (as.character(class(CNdata2)) != "cghCall"){ stop("CNdata2 not of class cghCall.") }
-	if ( dim(CNdata1)[2] != dim(CNdata2)[2] ){ stop("CNdata1 and CNdata2 have an unequal number of samples.") }
-	if ( dim(fData(CNdata1))[2] != dim(fData(CNdata2))[2] ){ stop("CNdata1 and CNdata2 have an unequal annotation columns.") }
-	amp1 <- is.null(probamp(CNdata1))
-	amp2 <- is.null(probamp(CNdata2))
-	if (!(amp1 & amp2) | (!amp1 & !amp2) ){ stop("One of the cghCall-objects has amplification probabilities whereas the other has not.") }
-
-	# prepare new annotation
-	annotation <- rbind(fData(CNdata1), fData(CNdata2))
-	newRowNames <- c(rownames(fData(CNdata1)), rownames(fData(CNdata2)))
-	if (length(newRowNames) != length(unique(newRowNames))){
-		warning("modified feature names are returned")
-		slh <- rep(1, length(newRowNames))
-		for (i in 1:length(unique(newRowNames))){
-			ids <- which(newRowNames == unique(newRowNames)[i])
-			slh[ids] <- 1:length(ids)
-		}
-		newRowNames <- paste(newRowNames, slh, sep="__")		
-	}
-	rownames(annotation) <- newRowNames
-	metaData <- data.frame(labelDescription=colnames(annotation)) 
-	annotation <- new("AnnotatedDataFrame", data=data.frame(annotation), varMetadata=metaData)
-
-	if (is.null(probamp(CNdata1))){ 
-		CNdata <- new('cghCall', 
-			copynumber = data.matrix(data.frame(rbind(copynumber(CNdata1), copynumber(CNdata2)), row.names=newRowNames)), 
-			segmented = data.matrix(data.frame(rbind(segmented(CNdata1), segmented(CNdata2)), row.names=newRowNames)), 
-			calls = data.matrix(data.frame(rbind(calls(CNdata1), calls(CNdata2)), row.names=newRowNames)), 
-			probloss = data.matrix(data.frame(rbind(probloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
-			probnorm = data.matrix(data.frame(rbind(probnorm(CNdata1), probnorm(CNdata2)), row.names=newRowNames)), 
-			probgain = data.matrix(data.frame(rbind(probgain(CNdata1), probgain(CNdata2)), row.names=newRowNames)), 
-			featureData = annotation) 
-	} else { 
-		CNdata <- new('cghCall', 
-			copynumber = data.matrix(data.frame(rbind(copynumber(CNdata1), copynumber(CNdata2)), row.names=newRowNames)), 
-			segmented = data.matrix(data.frame(rbind(segmented(CNdata1), segmented(CNdata2)), row.names=newRowNames)), 
-			calls = data.matrix(data.frame(rbind(calls(CNdata1), calls(CNdata2)), row.names=newRowNames)), 
-			probloss = data.matrix(data.frame(rbind(probloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
-			probnorm = data.matrix(data.frame(rbind(probnorm(CNdata1), probnorm(CNdata2)), row.names=newRowNames)), 
-			probgain = data.matrix(data.frame(rbind(probgain(CNdata1), probgain(CNdata2)), row.names=newRowNames)), 
-			probamp = data.matrix(data.frame(rbind(probamp(CNdata1), probamp(CNdata2)), row.names=newRowNames)), 
-			featureData = annotation) 
-	}
-	return(CNdata)
-}
-
-
-
-cghCall2maximumSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus=1, verbose=TRUE){
-   	############################################################################
-	# function shrinks cghCall-object to a subset of the features
-	############################################################################
-
-	# check input
-	if (verbose){ cat("perform input checks...", "\n") }
-	if (as.character(class(CNdata)) != "cghCall"){ stop("CNdata not of class cghCall.") }
-	# if (!(as.character(class(featureSubset))=="numeric" | as.character(class(featureSubset))=="integer" )){ stop("featureSubset of wrong class.") }
-	# if (!(as.character(class(weights))=="numeric" | as.character(class(weights))=="integer" )){ stop("weights of wrong class.") }
-	# if ( !(length(featureSubset) >= 1) ){ stop("featureSubset contains no row numbers.") }
-	# if ( !(min(featureSubset) >= 1 | max(featureSubset) <= nrow(fData(CNdata))) ){ stop("featureSubset contains illegal row numbers.") }
-	# if ( length(featureSubset) != length(weights) ){ stop("featureSubset and weights of unequal length.") }
-
-	if (!(as.character(class(chr))=="numeric" | as.character(class(chr))=="integer" )){ stop("chr of wrong class.") }
-	if (length(chr) != 1){ stop("chr of wrong length.") }
-	if ( !(chr >= 1 | chr <= ncol(fData(CNdata))) ){ stop("chr exceeds number of columns in featureData.") }
-	if (!(as.character(class(bpstart))=="numeric" | as.character(class(bpstart))=="integer" )){ stop("bpstart of wrong class.") }
-	if (length(bpstart) != 1){ stop("bpstart of wrong length.") }
-	if ( !(bpstart >= 1 | bpstart <= ncol(fData(CNdata))) ){ stop("bpstart exceeds number of columns in featureData.") }
-	if (!(as.character(class(bpend))=="numeric" | as.character(class(bpend))=="integer" )){ stop("bpend of wrong class.") }
-	if (length(bpend) != 1){ stop("bpend of wrong length.") }
-	if ( !(bpend >= 1 | chr <= ncol(fData(CNdata))) ){ stop("bpend exceeds number of columns in featureData.") }
-
-	# disecting the cghCall-object
-	amplifications <- FALSE
-	copynumberMat <- copynumber(CNdata)
-	segmentedMat <- segmented(CNdata)
-	problossMat <- probloss(CNdata)
-	probnormMat <- probnorm(CNdata)
-	probgainMat <- probgain(CNdata)
-	if (!is.null(probamp(CNdata))){ probampMat <- probamp(CNdata); amplifications <- TRUE }
-	CNann <- fData(CNdata)
-	rm(CNdata)
-	gc()
-
-	# identify maximum deviating features
-	if (verbose){ cat("generate subsetted segmented matrix ...", "\n") }
-	if (ncpus == 1){ idMat <- t(sapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) }
-	if (ncpus > 1){ 
-		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
-		idMat <- t(sfSapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) 
-	}
-
-	# subsetting of segmented data
-	if (ncpus == 1){ copynumberMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, copynumberMat, simplify=TRUE)) }
-	if (ncpus > 1){ copynumberMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, copynumberMat, simplify=TRUE)) }
-	if (ncpus == 1){ segmentedMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, segmentedMat, simplify=TRUE)) }
-	if (ncpus > 1){ segmentedMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, segmentedMat, simplify=TRUE)) }
-	if (ncpus == 1){ problossMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, problossMat, simplify=TRUE)) }
-	if (ncpus > 1){ problossMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, problossMat, simplify=TRUE)) }
-	if (ncpus == 1){ probnormMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probnormMat, simplify=TRUE)) }
-	if (ncpus > 1){ probnormMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probnormMat, simplify=TRUE)) }
-	if (ncpus == 1){ probgainMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probgainMat, simplify=TRUE)) }
-	if (ncpus > 1){ probgainMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probgainMat, simplify=TRUE)) }
-	if (amplifications){ 
-		if (ncpus == 1){ probampMat <- t(sapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probampMat, simplify=TRUE)) }
-		if (ncpus > 1){ probampMat <- t(sfSapply(1:nrow(idMat), .slhFunctMaxFeatures, featuresAndWeights, idMat, probampMat, simplify=TRUE)) }
-	}
-
-	# subsetting of call data
-	if (verbose){ cat("generate subsetted call matrices ...", "\n")	}
-	callsMat <- numeric()
-	for (i in 1:ncol(problossMat)){
-		if (!amplifications){
-			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
-			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
-		} else {
-			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
-			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
-		}
-	}	
-
-	# weighted subsetting of annotation data
-	if (verbose){ cat("reorganize annotation ...", "\n") }
-	if (ncpus == 1){ annotation <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
-	if (ncpus > 1){	annotation <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
-	colnames(annotation) <- c("Chromosome", "Start", "End")
-	if (ncpus == 1){ rownames(annotation) <- as.character(sapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
-	if (ncpus > 1){	rownames(annotation) <- as.character(sfSapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
-	if (length(rownames(annotation)) != length(unique(rownames(annotation)))){
-		warning("modified feature names are returned")
-		newRowNames <- rownames(annotation)
-		slh <- rep(1, length(newRowNames))
-		for (i in 1:length(unique(newRowNames))){
-			ids <- which(newRowNames == unique(newRowNames)[i])
-			slh[ids] <- 1:length(ids)
-		}
-		newRowNames <- paste(newRowNames, slh, sep="__")		
-		rownames(annotation) <- newRowNames
-	}
-	fInfo <- new("AnnotatedDataFrame", data=data.frame(annotation), varMetadata=data.frame(labelDescription=c("Chromosome", "Start", "End")))
-	if (ncpus > 1){ sfStop() }
-
-	rownames(copynumberMat) <- rownames(annotation)
-	rownames(segmentedMat) <- rownames(annotation)
-	rownames(problossMat) <- rownames(annotation)
-	rownames(probnormMat) <- rownames(annotation)
-	rownames(probgainMat) <- rownames(annotation)
-	rownames(callsMat) <- rownames(annotation)
-	if (amplifications){ rownames(probampMat) <- rownames(annotation) }
-
-	# make cghCall object
-	if (verbose){ cat("merge into cghCall object ...", "\n") }
-	if (!amplifications){ 
-		CNdata <- new('cghCall', 
-			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
-			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
-			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
-			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
-			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
-			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
-			featureData = fInfo) 
-	} else { 
-		CNdata <- new('cghCall', 
-			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
-			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
-			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
-			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
-			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
-			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
-			probamp = data.matrix(data.frame(probampMat, row.names=rownames(annotation))), 
-			featureData = fInfo) 
-	}
-	return(CNdata)
-}
-
 
 
 nBreakpoints <- function(featuresAndWeights, CNdata){
@@ -583,138 +1079,6 @@ expandMatching2singleIDs <- function(matchedIDs){
 	}
 	return(matchedIDs)
 }
-
-
-cghCall2weightedSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus=1, verbose=TRUE){
-   	############################################################################
-	# function shrinks cghCall-object to a subset of the features
-	############################################################################
-
-	# check input
-	if (verbose){ cat("perform input checks...", "\n") }
-	if (as.character(class(CNdata)) != "cghCall"){ stop("CNdata not of class cghCall.") }
-	# if (!(as.character(class(featureSubset))=="numeric" | as.character(class(featureSubset))=="integer" )){ stop("featureSubset of wrong class.") }
-	# if (!(as.character(class(weights))=="numeric" | as.character(class(weights))=="integer" )){ stop("weights of wrong class.") }
-	# if ( !(length(featureSubset) >= 1) ){ stop("featureSubset contains no row numbers.") }
-	# if ( !(min(featureSubset) >= 1 | max(featureSubset) <= nrow(fData(CNdata))) ){ stop("featureSubset contains illegal row numbers.") }
-	# if ( length(featureSubset) != length(weights) ){ stop("featureSubset and weights of unequal length.") }
-
-	if (!(as.character(class(chr))=="numeric" | as.character(class(chr))=="integer" )){ stop("chr of wrong class.") }
-	if (length(chr) != 1){ stop("chr of wrong length.") }
-	if ( !(chr >= 1 | chr <= ncol(fData(CNdata))) ){ stop("chr exceeds number of columns in featureData.") }
-	if (!(as.character(class(bpstart))=="numeric" | as.character(class(bpstart))=="integer" )){ stop("bpstart of wrong class.") }
-	if (length(bpstart) != 1){ stop("bpstart of wrong length.") }
-	if ( !(bpstart >= 1 | bpstart <= ncol(fData(CNdata))) ){ stop("bpstart exceeds number of columns in featureData.") }
-	if (!(as.character(class(bpend))=="numeric" | as.character(class(bpend))=="integer" )){ stop("bpend of wrong class.") }
-	if (length(bpend) != 1){ stop("bpend of wrong length.") }
-	if ( !(bpend >= 1 | chr <= ncol(fData(CNdata))) ){ stop("bpend exceeds number of columns in featureData.") }
-
-	# disecting the cghCall-object
-	amplifications <- FALSE
-	copynumberMat <- copynumber(CNdata)
-	segmentedMat <- segmented(CNdata)
-	problossMat <- probloss(CNdata)
-	probnormMat <- probnorm(CNdata)
-	probgainMat <- probgain(CNdata)
-	if (!is.null(probamp(CNdata))){ probampMat <- probamp(CNdata); amplifications <- TRUE }
-	CNann <- fData(CNdata)
-	rm(CNdata)
-	gc()
-
-	# weighted subsetting of raw copy number data
-	if (verbose){ cat("generate subsetted raw copy number matrix ...", "\n") }
-	if (ncpus == 1){ copynumberMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, copynumberMat, simplify=TRUE))	}
-	if (ncpus > 1){
-		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
-		copynumberMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, copynumberMat, simplify=TRUE))	
-	}
-
-	# weighted subsetting of segmented data
-	if (verbose){ cat("generate subsetted segmented matrix ...", "\n") }
-	if (ncpus == 1){ segmentedMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, segmentedMat, simplify=TRUE)) }
-	if (ncpus > 1){ segmentedMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, segmentedMat, simplify=TRUE)) }
-
-	# weighted subsetting of call probability data
-	if (verbose){ cat("generate subsetted call probability matrices ...", "\n") }
-	if (ncpus == 1){ problossMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, problossMat, simplify=TRUE)) }
-	if (ncpus > 1){ problossMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, problossMat, simplify=TRUE)) }
-	if (ncpus == 1){ probnormMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probnormMat, simplify=TRUE)) }
-	if (ncpus > 1){ probnormMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probnormMat, simplify=TRUE)) }
-	if (ncpus == 1){ probgainMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probgainMat, simplify=TRUE)) }
-	if (ncpus > 1){ probgainMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probgainMat, simplify=TRUE)) }
-	if (amplifications){ 
-		if (ncpus == 1){ probampMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probampMat, simplify=TRUE)) }
-		if (ncpus > 1){ probampMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, probampMat, simplify=TRUE)) }
-	}
-
-	# subsetting of call data
-	if (verbose){ cat("generate subsetted call matrices ...", "\n")	}
-	callsMat <- numeric()
-	for (i in 1:ncol(problossMat)){
-		if (!amplifications){
-			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
-			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i]), 1, which.max) - 2) }
-		} else {
-			if (ncpus == 1){ callsMat <- cbind(callsMat, apply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
-			if (ncpus > 1){ callsMat <- cbind(callsMat, sfApply(cbind(problossMat[,i], probnormMat[,i], probgainMat[,i], probampMat[,i]), 1, which.max) - 2) }
-		}
-	}	
-
-	# weighted subsetting of annotation data
-	if (verbose){ cat("reorganize annotation ...", "\n") }
-	if (ncpus == 1){ annotation <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
-	if (ncpus > 1){	annotation <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetAnnotation, CNann, chr, bpstart, bpend, simplify=TRUE)) }
-	colnames(annotation) <- c("Chromosome", "Start", "End")
-	if (ncpus == 1){ rownames(annotation) <- as.character(sapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
-	if (ncpus > 1){	rownames(annotation) <- as.character(sfSapply(featuresAndWeights, .slhFuncCombineFeatureNames, rownames(CNann), simplify=TRUE)) }
-	if (length(rownames(annotation)) != length(unique(rownames(annotation)))){
-		warning("modified feature names are returned")
-		newRowNames <- rownames(annotation)
-		slh <- rep(1, length(newRowNames))
-		for (i in 1:length(unique(newRowNames))){
-			ids <- which(newRowNames == unique(newRowNames)[i])
-			slh[ids] <- 1:length(ids)
-		}
-		newRowNames <- paste(newRowNames, slh, sep="__")		
-		rownames(annotation) <- newRowNames
-	}
-	fInfo <- new("AnnotatedDataFrame", data=data.frame(annotation), varMetadata=data.frame(labelDescription=c("Chromosome", "Start", "End")))
-	if (ncpus > 1){ sfStop() }
-
-	rownames(copynumberMat) <- rownames(annotation)
-	rownames(segmentedMat) <- rownames(annotation)
-	rownames(problossMat) <- rownames(annotation)
-	rownames(probnormMat) <- rownames(annotation)
-	rownames(probgainMat) <- rownames(annotation)
-	rownames(callsMat) <- rownames(annotation)
-	if (amplifications){ rownames(probampMat) <- rownames(annotation) }
-
-	# make cghCall object
-	if (verbose){ cat("merge into cghCall object ...", "\n") }
-	if (!amplifications){ 
-		CNdata <- new('cghCall', 
-			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
-			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
-			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
-			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
-			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
-			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
-			featureData = fInfo) 
-	} else { 
-		CNdata <- new('cghCall', 
-			copynumber = data.matrix(data.frame(copynumberMat, row.names=rownames(annotation))), 
-			segmented = data.matrix(data.frame(segmentedMat, row.names=rownames(annotation))), 
-			calls = data.matrix(data.frame(callsMat, row.names=rownames(annotation))), 
-			probloss = data.matrix(data.frame(problossMat, row.names=rownames(annotation))), 
-			probnorm = data.matrix(data.frame(probnormMat, row.names=rownames(annotation))), 
-			probgain = data.matrix(data.frame(probgainMat, row.names=rownames(annotation))), 
-			probamp = data.matrix(data.frame(probampMat, row.names=rownames(annotation))), 
-			featureData = fInfo) 
-	}
-	return(CNdata)
-}
-
 
 
 
@@ -1063,58 +1427,6 @@ matchAnn2Ann <- function(chr1, bpstart1, bpend1, chr2, bpstart2, bpend2, method=
 }
 
 
-cghCall2subset <- function(CNdata, featureSubset, verbose=TRUE){
-   	############################################################################
-	# function shrinks cghCall-object to a subset of the features
-	############################################################################
-
-	# check input
-	if (verbose){ cat("perform input checks...", "\n") }
-	if (as.character(class(CNdata)) != "cghCall"){ stop("CNdata not of class cghCall.") }
-	if (!(as.character(class(featureSubset))=="numeric" | as.character(class(featureSubset))=="integer" )){ stop("featureSubset of wrong class.") }
-	if ( !(length(featureSubset) >= 1) ){ stop("featureSubset contains no row numbers.") }
-	if ( !(min(featureSubset) >= 1 | max(featureSubset) <= nrow(fData(CNdata))) ){ stop("featureSubset contains illegal row numbers.") }
-
-	# sort out new annotation info
-	fd <- fData(CNdata)[featureSubset, , drop=FALSE]
-	newRowNames <- rownames(copynumber(CNdata))[featureSubset]
-	if (length(newRowNames) != length(unique(newRowNames))){
-		warning("modified feature names are returned")
-		slh <- rep(1, length(newRowNames))
-		for (i in 1:length(unique(newRowNames))){
-			ids <- which(newRowNames == unique(newRowNames)[i])
-			slh[ids] <- 1:length(ids)
-		}
-		newRowNames <- paste(newRowNames, slh, sep="__")		
-	}
-	rownames(fd) <- newRowNames
-	# sNames <- sampleNames(CNdata)
-	metaData <- data.frame(labelDescription=colnames(fd)) 
-	fd <- new("AnnotatedDataFrame", data=data.frame(fd), varMetadata=metaData)
-
-	if (is.null(probamp(CNdata)[featureSubset, , drop=FALSE])){ 
-		CNdata <- new('cghCall', 
-			copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			segmented = data.matrix(data.frame(segmented(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			calls = data.matrix(data.frame(calls(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			probloss = data.matrix(data.frame(probloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			probnorm = data.matrix(data.frame(probnorm(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			probgain = data.matrix(data.frame(probgain(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			featureData = fd) 
-	} else { 
-		CNdata <- new('cghCall', 
-			copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			segmented = data.matrix(data.frame(segmented(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			calls = data.matrix(data.frame(calls(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			probloss = data.matrix(data.frame(probloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			probnorm = data.matrix(data.frame(probnorm(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			probgain = data.matrix(data.frame(probgain(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			probamp = data.matrix(data.frame(probamp(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-			featureData = fd) 
-	}
-	return(CNdata)
-}
-
 
 getSegFeatures <- function(featureNo, CNdata, verbose=TRUE){
 	###########################################################
@@ -1165,41 +1477,6 @@ ExpressionSet2subset <- function(GEdata, featureSubset, verbose=TRUE){
 }
 
 
-cghCall2order <- function(CNdata, chr, bpstart, verbose=TRUE){
-   	###########################################################################################
-	# function that orders cghCall-object genomically
-	###########################################################################################
-
-	# check input
-	if (verbose){ cat("perform input checks...", "\n") }
-	if (as.character(class(CNdata)) != "cghCall"){ stop("CNdata not of class cghCall.") }
-	if (!(as.character(class(chr))=="numeric" | as.character(class(chr))=="integer" )){ stop("chr of wrong class.") }
-	if (length(chr) != 1){ stop("chr of wrong length.") }
-	if ( !(chr >= 1 | chr <= ncol(fData(CNdata))) ){ stop("chr exceeds number of columns in featureData.") }
-	if (!(as.character(class(bpstart))=="numeric" | as.character(class(bpstart))=="integer" )){ stop("bpstart of wrong class.") }
-	if (length(bpstart) != 1){ stop("bpstart of wrong length.") }
-	if ( !(bpstart >= 1 | bpstart <= ncol(fData(CNdata))) ){ stop("GEbpstart exceeds number of columns in featureData.") }
-
-	# extract annotation data for ordering
-	CNann <- fData(CNdata)[, c(chr, bpstart), drop=FALSE]
-
-	# in case columns are of wrong class ....
-	for (i in 1:2){
-		if (is.factor(CNann[,i])){ CNann[,i] <- as.numeric(levels(CNann[,i]))[CNann[,i]] }
-		if (is.character(CNann[,i])){ CNann[,i] <- as.numeric(CNann[,i]) }
-	}
-
-	# order ExpressionSet-object genomically	
-	fData(CNdata) <- fData(CNdata)[order(CNann[,1], CNann[,2]),]
-	copynumber(CNdata) <- copynumber(CNdata)[order(CNann[,1], CNann[,2]),]
-	segmented(CNdata) <- segmented(CNdata)[order(CNann[,1], CNann[,2]),]
-	calls(CNdata) <- calls(CNdata)[order(CNann[,1], CNann[,2]),]
-	probloss(CNdata) <- probloss(CNdata)[order(CNann[,1], CNann[,2]),]
-	probnorm(CNdata) <- probnorm(CNdata)[order(CNann[,1], CNann[,2]),]
-	probgain(CNdata) <- probgain(CNdata)[order(CNann[,1], CNann[,2]),]
-	if (is.null(probamp(CNdata))){ } else { probamp(CNdata) <- probamp(CNdata)[order(CNann[,1], CNann[,2]),] }
-	return(CNdata)
-}
 
 ExpressionSet2order <- function(GEdata, chr, bpstart, verbose=TRUE){
    	###########################################################################################
