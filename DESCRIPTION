@@ -1,7 +1,7 @@
 Package: sigaR
 Type: Package
 Title: statistics for integrative genomics analyses in R
-Version: 1.2.0
+Version: 1.3.0
 Date: 2012-09-18
 Author: Wessel N. van Wieringen <w.vanwieringen@vumc.nl>
 Maintainer: Wessel N. van Wieringen <w.vanwieringen@vumc.nl>
