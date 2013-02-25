@@ -410,7 +410,7 @@ cisEffectTune <- function(CNdata, GEdata, testStatistic, nGenes=250, nPerm=250, 
 
 	# Do actual tuning, returns list of genes that are propagated into the test
 	data.tuned <- .tuning(data.in=data.both, datacgh.in=datacgh2, allest=allest, alphanewmat=alphas2, powerunbal=powerunbal, null.dists.tune=null.dists.tune, seqg=seqgenes, test.stat=testStatistic, nperm=nPerm, pi0=pi0, fdrcut=0.05, nresamp=100, gridnr=200, minim=10, a=2, nosamp=nosamp, shiftsam=shiftsam, verbose)
-	genes2test <- .datareduce(powerunbal, as.real(data.tuned))
+	genes2test <- .datareduce(powerunbal, as.double(data.tuned))
 	if (verbose){ cat("ready: tuning done", "\n") }
 
 	# return(data.tuned)
