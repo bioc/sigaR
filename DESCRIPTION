@@ -1,16 +1,18 @@
 Package: sigaR
 Type: Package
 Title: statistics for integrative genomics analyses in R
-Version: 1.7.1
+Version: 1.7.2
 Date: 2012-09-18
 Author: Wessel N. van Wieringen <w.vanwieringen@vumc.nl>
 Maintainer: Wessel N. van Wieringen <w.vanwieringen@vumc.nl>
-Description: Facilites the joint analysis of high-throughput data from multiple molecular levels. Contains functions for manipulation of objects, various analysis types, and some visualization.
-License:  GPL (>= 2)
+Description: Facilites the joint analysis of high-throughput data from
+        multiple molecular levels. Contains functions for manipulation
+        of objects, various analysis types, and some visualization.
+License: GPL (>= 2)
 LazyLoad: yes
 URL: http://www.few.vu.nl/~wvanwie
 Depends: Biobase, CGHbase, methods, mvtnorm, penalized
 Imports: corpcor (>= 1.6.2), graphics, igraph, marray, MASS, mvtnorm,
         quadprog, penalized (>= 0.9-39), snowfall, stats
-biocViews: Microarray, Bioinformatics, DifferentialExpression, aCGH,
-        GeneExpression, Pathways
+biocViews: Microarray, DifferentialExpression, aCGH, GeneExpression,
+        Pathways
