@@ -138,10 +138,14 @@ CNGEheatmaps <- function(CNdata, GEdata, location="mode", colorbreaks="equiquant
 		xTempAboveMode <- xTemp[xTemp >= xMode]
 		xTempBelowMode <- cbind(xTempBelowMode, ecdf(xTempBelowMode)(xTempBelowMode))[order(xTempBelowMode),]
 		xTempAboveMode <- cbind(xTempAboveMode, ecdf(xTempAboveMode)(xTempAboveMode))[order(xTempAboveMode),]
+		if(any(xTempBelowMode[,2]==0)){ xTempBelowMode[any(xTempBelowMode[,2]==0),2] <- 10^(-10) }
+		if(any(xTempBelowMode[,2]==1)){ xTempBelowMode[any(xTempBelowMode[,2]==1),2] <- 1-10^(-10) }
+		if(any(xTempAboveMode[,2]==0)){ xTempAboveMode[any(xTempAboveMode[,2]==0),2] <- 10^(-10) }
+		if(any(xTempAboveMode[,2]==1)){ xTempAboveMode[any(xTempAboveMode[,2]==1),2] <- 1-10^(-10) }
 		if (colorbreaks == "equiquantiles"){
 			histresBM <- hist(xTempBelowMode[,2], plot=FALSE, n=100)
 			histresAM <- hist(xTempAboveMode[,2], plot=FALSE, n=101)
-			breaksX <- c(quantile(xTempBelowMode[,1], probs=histresBM$breaks), xMode, quantile(xTempAboveMode[,1], probs=histresAM$breaks))
+			breaksX <- c(quantile(xTempBelowMode[,1], probs=histresBM$breaks, na.rm=TRUE), xMode, quantile(xTempAboveMode[,1], probs=histresAM$breaks, na.rm=TRUE))
 			collistX <- c(maPalette(low = "red", high="black", k=length(histresBM$breaks)), maPalette(low="black", high="green", k=length(histresAM$breaks)))
 		}
 		if (colorbreaks == "equidistant"){
