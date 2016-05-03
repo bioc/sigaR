@@ -700,7 +700,7 @@
 			test.stats <- apply(data.in2, 1, .wcvm.test.stats, nosamp, a) 
 		}
 		rawpvals.test <- .rawps(test.stats, null.dists.tune, nperm)
-		pi0 <- convest(rawpvals.test)
+		pi0 <- limma::convest(rawpvals.test)
 		return(pi0)
 	}
 

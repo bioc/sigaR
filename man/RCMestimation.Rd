@@ -7,7 +7,9 @@ The implemented maximum likelihood procedure has been optimized with respect to 
 memory usage.
 }
 \usage{
-RCMestimation(Y, X, R, hypothesis = "H2", shrinkType = "none", estType = "normal", corType = "unif", maxNoIt = 100, minSuccDist = 0.005, verbose = FALSE)
+RCMestimation(Y, X, R, hypothesis = "H2", shrinkType = "none", 
+estType = "normal", corType = "unif", maxNoIt = 100, 
+minSuccDist = 0.005, verbose = FALSE)
 }
 \arguments{
   \item{Y}{ The \code{matrix} containing the (e.g., expression) data (number of columns equal to number of features, number of rows equal to number of samples). }

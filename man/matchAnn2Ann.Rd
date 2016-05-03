@@ -7,7 +7,9 @@ Genomic location matching of two sets of features
 Genomic location matching of two sets of features
 }
 \usage{
-matchAnn2Ann(chr1, bpstart1, bpend1, chr2, bpstart2, bpend2, method = "distance", maxDist = 10000, minPerc = 0, reference = 1, ncpus = 1, verbose=TRUE)
+matchAnn2Ann(chr1, bpstart1, bpend1, chr2, bpstart2, bpend2, 
+method = "distance", maxDist = 10000, minPerc = 0, 
+reference = 1, ncpus = 1, verbose=TRUE)
 }
 \arguments{
   \item{chr1}{ Object of class \code{numeric} containing chromosome information of features from set 1. }
@@ -46,7 +48,7 @@ Base pair information of features from both sets should be on the same scale!
 Features with incomplete annotation information are removed before matching. For clarity, they are not included in the object with matched features.
 }
 \references{	
-Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{submitted for publication}. 
+Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{BMC Bioinformatics}, 13:80. 
 }
 \author{ Wessel N. van Wieringen: \email{w.vanwieringen@vumc.nl} }
 \seealso{\code{matchCGHcall2ExpressionSet}}
@@ -66,5 +68,6 @@ bpstart2 <- fData(pollackGE16)[,2]
 bpend2 <- fData(pollackGE16)[,3]
 
 # match features from both platforms
-matchedFeatures <- matchAnn2Ann(chr1, bpstart1, bpend1, chr2, bpstart2, bpend2, method = "distance", maxDist = 10000) 
+matchedFeatures <- matchAnn2Ann(chr1, bpstart1, bpend1, chr2, 
+	bpstart2, bpend2, method = "distance", maxDist = 10000) 
 }

@@ -9,8 +9,9 @@ Parameters of this model are fitted by minimizing of a penalized least squares c
 encourages within-sample sparsity (lasso), and limits the between-sample differences (fused lasso).
 }
 \usage{
-pathway2sample(Y, X, id, lambda1 = 1, lambdaF = 1, method = "FL", constr = TRUE, startCis = numeric(), startTrans1 =
-                 matrix(), startTrans2 = matrix(), epsilon = 0, verbose = FALSE)
+pathway2sample(Y, X, id, lambda1 = 1, lambdaF = 1, method = "FL", 
+	constr = TRUE, startCis = numeric(), startTrans1 =
+        matrix(), startTrans2 = matrix(), epsilon = 0, verbose = FALSE)
 }
 \arguments{
    \item{Y}{ Object of class \code{matrix}. Rows are assumed to represent the samples, and columns represent the samples' gene expression levels. }
@@ -66,7 +67,8 @@ n <- 1000
 beta <- abs(rnorm(p))
 
 # sample trans-effects for first sample
-Theta1 <- matrix(sample(c(-1,1), p^2, replace=TRUE, prob=c(0.2, 0.8)), ncol=p) * matrix(runif(p^2), ncol=p) / 4
+Theta1 <- matrix(sample(c(-1,1), p^2, replace=TRUE, prob=c(0.2, 0.8)), ncol=p) * 
+	matrix(runif(p^2), ncol=p) / 4
 diag(Theta1) <- 1
 
 # sample trans-effects for second sample
@@ -81,13 +83,15 @@ Sigma <- diag(rchisq(p, df=1)/5 + 0.5)
 X1 <- matrix(runif(n*p, min=-2, max=2), ncol=p)
 
 # sample gene expression data
-Y1 <- t(apply(X1, 1, function(Y, beta){ Y * beta }, beta=beta)) \%*\% t(solve(Theta1)) + rmvnorm(n, sigma=solve(Theta1) \%*\% Sigma \%*\% t(solve(Theta1)))
+Y1 <- t(apply(X1, 1, function(Y, beta){ Y * beta }, beta=beta)) \%*\% t(solve(Theta1)) + 
+	rmvnorm(n, sigma=solve(Theta1) \%*\% Sigma \%*\% t(solve(Theta1)))
 
 # sample DNA copy number data of sample 1
 X2 <- matrix(runif(n*p, min=-2, max=2), ncol=p)
 
 # sample gene expression data
-Y2 <- t(apply(X2, 1, function(Y, beta){ Y * beta }, beta=beta)) \%*\% t(solve(Theta2)) + rmvnorm(n, sigma=solve(Theta2) \%*\% Sigma \%*\% t(solve(Theta2)))
+Y2 <- t(apply(X2, 1, function(Y, beta){ Y * beta }, beta=beta)) \%*\% t(solve(Theta2)) + 
+	rmvnorm(n, sigma=solve(Theta2) \%*\% Sigma \%*\% t(solve(Theta2)))
 
 # construct id-vector
 id <- c(rep(0, n), rep(1, n))

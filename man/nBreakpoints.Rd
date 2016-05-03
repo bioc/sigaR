@@ -45,7 +45,8 @@ bpstart2 <- fData(pollackGE16)[,2]
 bpend2 <- fData(pollackGE16)[,3]
 
 # match features from both platforms
-matchedIDs <- matchAnn2Ann(chr1, bpstart1, bpend1, chr2, bpstart2, bpend2, method = "distance", maxDist = 10000) 
+matchedIDs <- matchAnn2Ann(chr1, bpstart1, bpend1, chr2, bpstart2, 
+	bpend2, method = "distance", maxDist = 10000) 
 
 # extract ids for object subsetting
 matchedIDsCN <- lapply(matchedIDs, function(Z){ return(Z[, -1, drop=FALSE]) }) 

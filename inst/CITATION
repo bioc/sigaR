@@ -2,9 +2,9 @@ citHeader("To cite the sigaR package in publications use:")
 
 citEntry(entry="Manual",
     title = "sigaR: statistics for integrative genomics analyses in R",
-    author = personList(as.person("W. N. van Wieringen")),
+    author = personList(as.person("W.N. van Wieringen")),
     year = substring(packageDescription("sigaR")$Date,1,4),
-    note = paste("R package version", packageDescription("sigaR")$version),
+    note = paste("R package version", packageDescription("sigaR")$Version),
     textVersion =
       paste("Wessel N. van Wieringen (",
         substring(packageDescription("sigaR")$Date,1,4),
@@ -28,7 +28,6 @@ citEntry(entry="Article",
         	"Biometrics, 65(1), 19-29.")
 )
  
-
 citEntry(entry="Article",
     title = "A random coefficients model for regional co-expression associated with DNA copy number",
     author = personList(as.person("W.N. van Wieringen"),

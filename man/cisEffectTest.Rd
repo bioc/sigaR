@@ -8,7 +8,9 @@ weighted version of well-known test statistics are used. An efficient permutatio
 }
 
 \usage{
-cisEffectTest(CNdata, GEdata, genes2test=NULL, GEchr, analysisType="univariate", testStatistic="wcvm", nPerm = 10000, lowCiThres = 0.1, verbose=TRUE)
+cisEffectTest(CNdata, GEdata, genes2test=NULL, GEchr, 
+analysisType="univariate", testStatistic="wcvm", 
+nPerm = 10000, lowCiThres = 0.1, verbose=TRUE)
 }
 
 \arguments{

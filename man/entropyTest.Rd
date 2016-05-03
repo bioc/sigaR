@@ -9,7 +9,8 @@ The test is one-sided: one group is a priori suspected to have a larger entropy.
 The null distribution is obtained via an efficient permutation resampling algorithm.
 }
 \usage{
-entropyTest(Y, id, nPerm = 1000, method = "normal", k0 = 1, k1 = 1, center = TRUE, lowCiThres=0.10, ncpus=1, verbose=FALSE)
+entropyTest(Y, id, nPerm = 1000, method = "normal", k0 = 1, k1 = 1, 
+center = TRUE, lowCiThres=0.10, ncpus=1, verbose=FALSE)
 }
 \arguments{
 \item{Y}{

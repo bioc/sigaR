@@ -7,7 +7,8 @@ Plot of the pathyway topology as reconstructed from from DNA copy number and gen
 Plotting the topology of a pathway's regulatory network as reconstructed from from DNA copy number and gene expression data by the \code{pathway1sample}-function.
 }
 \usage{
-pathwayPlot(pFit, directed = TRUE, tWidth = 1, cWidth = 1, geWidth=10, cnWidth=10, circleDist = 1.5, gNames = NULL, main = "", remove = FALSE)
+pathwayPlot(pFit, directed = TRUE, tWidth = 1, cWidth = 1, geWidth=10, 
+	cnWidth=10, circleDist = 1.5, gNames = NULL, main = "", remove = FALSE)
 }
 
 \arguments{
@@ -41,7 +42,8 @@ n <- 1000
 beta <- abs(rnorm(p))
 
 # sample trans-effects
-Theta <- matrix(sample(c(-1,1), p^2, replace=TRUE, prob=c(0.2, 0.8)), ncol=p) * matrix(runif(p^2), ncol=p) / 4
+Theta <- matrix(sample(c(-1,1), p^2, replace=TRUE, prob=c(0.2, 0.8)), ncol=p) * 
+	matrix(runif(p^2), ncol=p) / 4
 diag(Theta) <- 1
 
 # sample error variances
@@ -51,7 +53,8 @@ Sigma <- diag(rchisq(p, df=1)/5 + 0.5)
 X <- matrix(runif(n*p, min=-2, max=2), ncol=p)
 
 # sample gene expression data
-Y <- t(apply(X, 1, function(Y, beta){ Y * beta }, beta=beta)) \%*\% t(solve(Theta)) + rmvnorm(n, sigma=solve(Theta) \%*\% Sigma \%*\% t(solve(Theta)))
+Y <- t(apply(X, 1, function(Y, beta){ Y * beta }, beta=beta)) \%*\% t(solve(Theta)) + 
+	rmvnorm(n, sigma=solve(Theta) \%*\% Sigma \%*\% t(solve(Theta)))
 
 # fit model
 pFit <- pathway1sample(Y, X, lambda1=500)

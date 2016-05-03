@@ -26,13 +26,13 @@ cghCall2maximumSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpen
 
 	# disecting the cghCall-object
 	amplifications <- FALSE
-	copynumberMat <- copynumber(CNdata)
-	segmentedMat <- segmented(CNdata)
-	problossMat <- probloss(CNdata)
-	probnormMat <- probnorm(CNdata)
-	probgainMat <- probgain(CNdata)
-	if (!is.null(probamp(CNdata))){ probampMat <- probamp(CNdata); amplifications <- TRUE }
-	if (!is.null(probdloss(CNdata))){ probdlossMat <- probdloss(CNdata); doubleLoss <- TRUE }
+	copynumberMat <- CGHbase::copynumber(CNdata)
+	segmentedMat <- CGHbase::segmented(CNdata)
+	problossMat <- CGHbase::probloss(CNdata)
+	probnormMat <- CGHbase::probnorm(CNdata)
+	probgainMat <- CGHbase::probgain(CNdata)
+	if (!is.null(CGHbase::probamp(CNdata))){ probampMat <- CGHbase::probamp(CNdata); amplifications <- TRUE }
+	if (!is.null(CGHbase::probdloss(CNdata))){ probdlossMat <- CGHbase::probdloss(CNdata); doubleLoss <- TRUE }
 	CNann <- fData(CNdata)
 	rm(CNdata)
 	gc()
@@ -206,7 +206,7 @@ cghCall2weightedSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpe
 	probnormMat <- probnorm(CNdata)
 	probgainMat <- probgain(CNdata)
 	if (!is.null(probamp(CNdata))){ probampMat <- probamp(CNdata); amplifications <- TRUE }
-	if (!is.null(probdloss(CNdata))){ probdlossMat <- probdloss(CNdata); doubleLoss <- TRUE }
+	if (!is.null(CGHbase::probdloss(CNdata))){ probdlossMat <- CGHbase::probdloss(CNdata); doubleLoss <- TRUE }
 	CNann <- fData(CNdata)
 	rm(CNdata)
 	gc()
@@ -504,7 +504,7 @@ cghCall2subset <- function(CNdata, featureSubset, verbose=TRUE){
 	metaData <- data.frame(labelDescription=colnames(fd)) 
 	fd <- new("AnnotatedDataFrame", data=data.frame(fd), varMetadata=metaData)
 
-	if (is.null(probdloss(CNdata)[featureSubset, , drop=FALSE])){ 
+	if (is.null(CGHbase::probdloss(CNdata)[featureSubset, , drop=FALSE])){ 
 		if (is.null(probamp(CNdata)[featureSubset, , drop=FALSE])){ 
 			CNdata <- new('cghCall', 
 				copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
@@ -531,7 +531,7 @@ cghCall2subset <- function(CNdata, featureSubset, verbose=TRUE){
 				copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
 				segmented = data.matrix(data.frame(segmented(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
 				calls = data.matrix(data.frame(calls(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-				probdloss = data.matrix(data.frame(probdloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)),  
+				probdloss = data.matrix(data.frame(CGHbase::probdloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)),  
 				probloss = data.matrix(data.frame(probloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)),
 				probnorm = data.matrix(data.frame(probnorm(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
 				probgain = data.matrix(data.frame(probgain(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
@@ -541,7 +541,7 @@ cghCall2subset <- function(CNdata, featureSubset, verbose=TRUE){
 				copynumber = data.matrix(data.frame(copynumber(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
 				segmented = data.matrix(data.frame(segmented(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
 				calls = data.matrix(data.frame(calls(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
-				probdloss = data.matrix(data.frame(probdloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)),  
+				probdloss = data.matrix(data.frame(CGHbase::probdloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)),  
 				probloss = data.matrix(data.frame(probloss(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
 				probnorm = data.matrix(data.frame(probnorm(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
 				probgain = data.matrix(data.frame(probgain(CNdata)[featureSubset, , drop=FALSE], row.names=newRowNames)), 
@@ -587,7 +587,7 @@ merge2cghCalls <- function(CNdata1, CNdata2, verbose=TRUE){
 	metaData <- data.frame(labelDescription=colnames(annotation)) 
 	annotation <- new("AnnotatedDataFrame", data=data.frame(annotation), varMetadata=metaData)
 
-	if (is.null(probdloss(CNdata1))){ 
+	if (is.null(CGHbase::probdloss(CNdata1))){ 
 		if (is.null(probamp(CNdata1))){ 
 			CNdata <- new('cghCall', 
 				copynumber = data.matrix(data.frame(rbind(copynumber(CNdata1), copynumber(CNdata2)), row.names=newRowNames)), 
@@ -614,7 +614,7 @@ merge2cghCalls <- function(CNdata1, CNdata2, verbose=TRUE){
 				copynumber = data.matrix(data.frame(rbind(copynumber(CNdata1), copynumber(CNdata2)), row.names=newRowNames)), 
 				segmented = data.matrix(data.frame(rbind(segmented(CNdata1), segmented(CNdata2)), row.names=newRowNames)), 
 				calls = data.matrix(data.frame(rbind(calls(CNdata1), calls(CNdata2)), row.names=newRowNames)), 
-				probdloss = data.matrix(data.frame(rbind(probdloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
+				probdloss = data.matrix(data.frame(rbind(CGHbase::probdloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
 				probloss = data.matrix(data.frame(rbind(probloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
 				probnorm = data.matrix(data.frame(rbind(probnorm(CNdata1), probnorm(CNdata2)), row.names=newRowNames)), 
 				probgain = data.matrix(data.frame(rbind(probgain(CNdata1), probgain(CNdata2)), row.names=newRowNames)), 
@@ -624,7 +624,7 @@ merge2cghCalls <- function(CNdata1, CNdata2, verbose=TRUE){
 				copynumber = data.matrix(data.frame(rbind(copynumber(CNdata1), copynumber(CNdata2)), row.names=newRowNames)), 
 				segmented = data.matrix(data.frame(rbind(segmented(CNdata1), segmented(CNdata2)), row.names=newRowNames)), 
 				calls = data.matrix(data.frame(rbind(calls(CNdata1), calls(CNdata2)), row.names=newRowNames)), 
-				probdloss = data.matrix(data.frame(rbind(probdloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
+				probdloss = data.matrix(data.frame(rbind(CGHbase::probdloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
 				probloss = data.matrix(data.frame(rbind(probloss(CNdata1), probloss(CNdata2)), row.names=newRowNames)), 
 				probnorm = data.matrix(data.frame(rbind(probnorm(CNdata1), probnorm(CNdata2)), row.names=newRowNames)), 
 				probgain = data.matrix(data.frame(rbind(probgain(CNdata1), probgain(CNdata2)), row.names=newRowNames)), 
@@ -672,7 +672,7 @@ cghCall2order <- function(CNdata, chr, bpstart, verbose=TRUE){
 	probnorm(CNdata) <- probnorm(CNdata)[order(CNann[,1], CNann[,2]),]
 	probgain(CNdata) <- probgain(CNdata)[order(CNann[,1], CNann[,2]),]
 	if (is.null(probamp(CNdata))){ } else { probamp(CNdata) <- probamp(CNdata)[order(CNann[,1], CNann[,2]),] }
-	if (is.null(probdloss(CNdata))){ } else { probdloss(CNdata) <- probdloss(CNdata)[order(CNann[,1], CNann[,2]),] }
+	if (is.null(CGHbase::probdloss(CNdata))){ } else { CGHbase::probdloss(CNdata) <- CGHbase::probdloss(CNdata)[order(CNann[,1], CNann[,2]),] }
 	return(CNdata)
 }
 

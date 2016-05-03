@@ -20,7 +20,7 @@ An object of class \code{list}. Each list item is a four-column matrix with the 
 The second, third and fourth column contain the chromosome, start and end base pair information of the features (should be the same for each feature).
 }
 \references{	
-Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{submitted for publication}. 
+Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{BMC Bioinformatics}, 13:80. 
 }
 \author{ Wessel N. van Wieringen: \email{w.vanwieringen@vumc.nl} }
 \seealso{\code{ExpressionSet2weightedSubset}, \code{cghCall2weightedSubset}

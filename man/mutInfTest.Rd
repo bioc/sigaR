@@ -8,7 +8,8 @@ A test evaluates the significance of the mutual information between two (high-di
 The null distribution is obtained via an efficient permutation resampling algorithm.
 }
 \usage{
-mutInfTest(Y, X, nPerm = 1000, method = "normal", k = 1, center = TRUE, rescale = TRUE, lowCiThres=0.10, ncpus=1, verbose=FALSE)
+mutInfTest(Y, X, nPerm = 1000, method = "normal", k = 1, center = TRUE, 
+rescale = TRUE, lowCiThres=0.10, ncpus=1, verbose=FALSE)
 }
 \arguments{
 \item{Y}{

@@ -11,11 +11,13 @@ importMethodsFrom(CGHbase, calls, "calls<-", chromosomes, copynumber,
 importMethodsFrom(marray, image, points)
 
 importFrom(graphics, abline, axis, barplot, box, hist, layout, mtext,
-           par, segments, title)
+           par, segments, title, legend, symbols)
 
 importFrom(corpcor, pcor.shrink)
 
 importFrom(igraph, E, graph.adjacency, layout.circle, plot.igraph)
+
+importFrom(limma, convest)
 
 importFrom(marray, maPalette)
 
@@ -31,7 +33,8 @@ importFrom(quadprog, solve.QP)
 
 importFrom(snowfall, sfApply, sfInit, sfLibrary, sfSapply, sfStop)
 
-importFrom(stats, dist, ecdf, mad, median, quantile, sd)
+importFrom(stats, dist, ecdf, mad, median, quantile, sd, coef, cor, p.adjust, residuals, var)
+
 
 exportPattern("^[^\\.]")
 
@@ -48,5 +51,6 @@ export(cghCall2cghSeg, cghCall2maximumSubset, cghCall2order, cghCall2subset, cgh
 	merge2ExpressionSets, mutInfTest, nBreakpoints,
 	pathway1sample, pathway1sample, pathwayPlot, profilesPlot, RCMestimation,
 	RCMrandom, RCMtest, splitMatchingAtBreakpoints, uniqGenomicInfo)
+
 
 

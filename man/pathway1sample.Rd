@@ -8,7 +8,8 @@ The regulatory relationships between DNA copy number and gene expression within 
 Parameters of this model are fitted by minimizing of a penalized least squares criterion. The employed penalty is that of the lasso, encouraging sparsity.
 }
 \usage{
-pathway1sample(Y, X, lambda1 = 1, constr = TRUE, startCis=numeric(), startTrans=matrix(), verbose = FALSE)
+pathway1sample(Y, X, lambda1 = 1, constr = TRUE, startCis=numeric(), 
+	startTrans=matrix(), verbose = FALSE)
 }
 \arguments{
    \item{Y}{ \code{matrix}. Rows are assumed to represent the samples, and columns represent the samples' gene expression levels. }
@@ -44,7 +45,8 @@ n <- 1000
 beta <- abs(rnorm(p))
 
 # sample trans-effects
-Theta <- matrix(sample(c(-1,1), p^2, replace=TRUE, prob=c(0.2, 0.8)), ncol=p) * matrix(runif(p^2), ncol=p) / 4
+Theta <- matrix(sample(c(-1,1), p^2, replace=TRUE, prob=c(0.2, 0.8)), ncol=p) * 
+		matrix(runif(p^2), ncol=p) / 4
 diag(Theta) <- 1
 
 # sample error variances
@@ -54,7 +56,8 @@ Sigma <- diag(rchisq(p, df=1)/5 + 0.5)
 X <- matrix(runif(n*p, min=-2, max=2), ncol=p)
 
 # sample gene expression data
-Y <- t(apply(X, 1, function(Y, beta){ Y * beta }, beta=beta)) \%*\% t(solve(Theta)) + rmvnorm(n, sigma=solve(Theta) \%*\% Sigma \%*\% t(solve(Theta)))
+Y <- t(apply(X, 1, function(Y, beta){ Y * beta }, beta=beta)) \%*\% t(solve(Theta)) + 
+	rmvnorm(n, sigma=solve(Theta) \%*\% Sigma \%*\% t(solve(Theta)))
 
 # fit model
 pFit <- pathway1sample(Y, X, lambda1=1, verbose=TRUE)

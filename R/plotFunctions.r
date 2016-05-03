@@ -5,12 +5,12 @@ profilesPlot <- function(CNdata, GEdata, sampleNo, chr=0, verbose=TRUE){
 
 	profilePlot <- function (x, segment, z){
 
-		chrom           <- chromosomes(x)
+		chrom           <- CGHbase::chromosomes(x)
 		chrom.labels    <- unique(chrom)
 		nclone          <- length(chrom)
 	
-		genomdat        <- copynumber(x)[,1]
-		probsdraw       <- cbind(probloss(x)[,1], probnorm(x)[,1], probgain(x))
+		genomdat        <- CGHbase::copynumber(x)[,1]
+		probsdraw       <- cbind(CGHbase::probloss(x)[,1], CGHbase::probnorm(x)[,1], CGHbase::probgain(x))
 		if (!is.null(probamp(x))){ probsdraw <- cbind(probsdraw, probamp(x)[,1]) }
         
 		widths          <- segment[,3] - segment[,2] + 1
@@ -78,11 +78,11 @@ profilesPlot <- function(CNdata, GEdata, sampleNo, chr=0, verbose=TRUE){
 	SegExpr <- numeric()
 	# SegData <- segmented(CNdata[,sampleNo])
 	# segmentsCN <- sigaR:::.makeSegments(segmented(CNdata[,sampleNo]))	
-	segmentsCN <- .makeSegments(segmented(CNdata[,sampleNo]))	
+	segmentsCN <- .makeSegments(CGHbase::segmented(CNdata[,sampleNo]))	
 	segmentsGE <- segmentsCN
 	for (j in 1:dim(segmentsCN)[1]){
 		ids <- c(segmentsCN[j,2]:segmentsCN[j,3])
-		medSegExpr <- median(exprs(GEdata)[ids, sampleNo])
+		medSegExpr <- median(Biobase::exprs(GEdata)[ids, sampleNo])
 		segmentsGE[j, 1] <- medSegExpr
 		SegExpr <- c(SegExpr, rep(medSegExpr, length(ids)))
 	}
@@ -90,7 +90,7 @@ profilesPlot <- function(CNdata, GEdata, sampleNo, chr=0, verbose=TRUE){
 	# modify CGHcall object
 	CNdataGE <- CNdata
 	segmented(CNdataGE)[,sampleNo] <- SegExpr
-	copynumber(CNdataGE)[,sampleNo] <- exprs(GEdata)[,sampleNo]
+	copynumber(CNdataGE)[,sampleNo] <- Biobase::exprs(GEdata)[,sampleNo]
 
 	# plot profiles
 	op <- par(mfrow = c(2, 1), pty = "m")
@@ -103,7 +103,7 @@ profilesPlot <- function(CNdata, GEdata, sampleNo, chr=0, verbose=TRUE){
 
 CNGEheatmaps <- function(CNdata, GEdata, location="mode", colorbreaks="equiquantiles"){
 
-	makeRegions <- function(CNsegData){
+	makeRegionsSigaR <- function(CNsegData){
 		# determine regions
 		splitter <- list()
 		splitter[[1]] <- c(1)
@@ -162,7 +162,7 @@ CNGEheatmaps <- function(CNdata, GEdata, location="mode", colorbreaks="equiquant
 	if (!(colorbreaks %in% c("equidistant", "equiquantiles"))){ stop("colorbreaks parameter ill-specified.") }
 
 	# determine regions
-	regDetails <- makeRegions(segmented(CNdata))
+	regDetails <- makeRegionsSigaR(CGHbase::segmented(CNdata))
 	regChr <- fData(CNdata)[regDetails[ ,1], 1]
 
 	# calculate and extract segment level data for expression and copy number (respectively)

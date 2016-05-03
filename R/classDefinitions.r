@@ -21,15 +21,15 @@ setMethod("summary", "rcmTest", function(object){
 	# summarize clm object
 	###########################################################
 	cat(paste("Coefficients:", sep=""), "\n")
-	print(matrix(round(object@betas, d=3), nrow=1))
+	print(matrix(round(object@betas, digits=3), nrow=1))
 	cat(paste("Random effects (as variances):", sep=""), "\n")
-	print(matrix(round(object@tau2s, d=3), nrow=1))
-	cat(paste("Variance (average): ", round(object@av.sigma2s, d=3), sep=""), "\n")
-	cat(paste("Correlation (", object@corType, "): ", round(object@rho, d=3), sep=""), "\n")
-	cat(paste("Shrinkage: ", round(object@shrinkage, d=3), sep=""), "\n")
-	cat(paste("Log-likelihood: ", round(object@loglik, d=3), sep=""), "\n")
+	print(matrix(round(object@tau2s, digits=3), nrow=1))
+	cat(paste("Variance (average): ", round(object@av.sigma2s, digits=3), sep=""), "\n")
+	cat(paste("Correlation (", object@corType, "): ", round(object@rho, digits=3), sep=""), "\n")
+	cat(paste("Shrinkage: ", round(object@shrinkage, digits=3), sep=""), "\n")
+	cat(paste("Log-likelihood: ", round(object@loglik, digits=3), sep=""), "\n")
 	cat("\n")
-	cat(paste("Test statistic: ", round(object@statistic, d=3), ",  p-value: ", round(object@p.value, d=3), sep=""), "\n")
+	cat(paste("Test statistic: ", round(object@statistic, digits=3), ",  p-value: ", round(object@p.value, digits=3), sep=""), "\n")
 	cat(paste("Remarks: ", object@remark, sep=""), "\n")
 })
 
@@ -39,13 +39,13 @@ setMethod("summary", "rcmFit", function(object){
 	# summarize rcmFit object
 	###########################################################
 	cat(paste("Coefficients:", sep=""), "\n")
-	print(matrix(round(object@betas, d=3), nrow=1))
+	print(matrix(round(object@betas, digits=3), nrow=1))
 	cat(paste("Random effects (as variances):", sep=""), "\n")
-	print(matrix(round(object@tau2s, d=3), nrow=1))
-	cat(paste("Variance (average): ", round(object@av.sigma2s, d=3), sep=""), "\n")
-	cat(paste("Correlation (", object@corType, "): ", round(object@rho, d=3), sep=""), "\n")
-	cat(paste("Shrinkage: ", round(object@shrinkage, d=3), sep=""), "\n")
-	cat(paste("Log-likelihood: ", round(object@loglik, d=3), sep=""), "\n")
+	print(matrix(round(object@tau2s, digits=3), nrow=1))
+	cat(paste("Variance (average): ", round(object@av.sigma2s, digits=3), sep=""), "\n")
+	cat(paste("Correlation (", object@corType, "): ", round(object@rho, digits=3), sep=""), "\n")
+	cat(paste("Shrinkage: ", round(object@shrinkage, digits=3), sep=""), "\n")
+	cat(paste("Log-likelihood: ", round(object@loglik, digits=3), sep=""), "\n")
 })
 
 setMethod("summary", "entTest", function(object){
@@ -53,7 +53,7 @@ setMethod("summary", "entTest", function(object){
 	# summarize entTest object
 	###########################################################
 	cat(paste("Two-sample entropy test:", sep=""), "\n")
-	cat(paste("Test statistic: ", round(object@statistic, d=3), ",  p-value: ", round(object@p.value, d=3), sep=""), "\n")
+	cat(paste("Test statistic: ", round(object@statistic, digits=3), ",  p-value: ", round(object@p.value, digits=3), sep=""), "\n")
 	cat(paste("Remarks: ", object@remark, sep=""), "\n")
 })
 
@@ -62,7 +62,7 @@ setMethod("summary", "miTest", function(object){
 	# summarize miTest object
 	###########################################################
 	cat(paste("Mutual information test:", sep=""), "\n")
-	cat(paste("Test statistic: ", round(object@statistic, d=3), ",  p-value: ", round(object@p.value, d=3), sep=""), "\n")
+	cat(paste("Test statistic: ", round(object@statistic, digits=3), ",  p-value: ", round(object@p.value, digits=3), sep=""), "\n")
 	cat(paste("Remarks: ", object@remark, sep=""), "\n")
 })
 

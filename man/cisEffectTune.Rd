@@ -9,7 +9,8 @@ detection for genes with a more favorable call probability distribution.
 }
 
 \usage{
-cisEffectTune(CNdata, GEdata, testStatistic, nGenes=250, nPerm=250, minCallProbMass=0.10, verbose=TRUE)
+cisEffectTune(CNdata, GEdata, testStatistic, nGenes=250, 
+nPerm=250, minCallProbMass=0.10, verbose=TRUE)
 }
 
 

@@ -7,7 +7,8 @@ Weighted subsetting cghSeg-objects.
 Limit an \code{\link{cghSeg}} object to a subset of its features, using weighted averaging of the copy number signal.
 }
 \usage{
-cghSeg2weightedSubset(CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus = 1, verbose=TRUE)
+cghSeg2weightedSubset(CNdata, featuresAndWeights, chr, bpstart, 
+bpend, ncpus = 1, verbose=TRUE)
 }
 \arguments{
   \item{CNdata}{ Object of class \code{\link{cghSeg}}. }
@@ -20,7 +21,7 @@ cghSeg2weightedSubset(CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus = 1
 }
 \value{ Object of class \code{\link{cghSeg}}, restricted to the specified subset of features. }
 \references{	
-Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{BMC Bioinformatics}, accepted for publication. 
+Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{BMC Bioinformatics}, 13:80. 
 }
 \author{ Wessel N. van Wieringen: \email{w.vanwieringen@vumc.nl} }
 \note{

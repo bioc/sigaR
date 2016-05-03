@@ -7,7 +7,10 @@ Hypothesis testing within the random coefficient model.
 Function that evaluates various hypothesis within the random coefficients model via bootstrap resampling.
 }
 \usage{
-RCMtest(Y, X, R, testType = "I", nBoot = 100, lowCiThres = 0.1, shrinkType = "none", estType = "normal", corType = "unif", maxNoIt = 100, minSuccDist = 0.005, returnNullDist = FALSE, ncpus=1, verbose = FALSE)
+RCMtest(Y, X, R, testType = "I", nBoot = 100, lowCiThres = 0.1, 
+shrinkType = "none", estType = "normal", corType = "unif", 
+maxNoIt = 100, minSuccDist = 0.005, returnNullDist = FALSE, 
+ncpus=1, verbose = FALSE)
 }
 \arguments{
   \item{Y}{ The \code{matrix} containing the (e.g., expression) data (number of columns equal to number of features, number of rows equal to number of samples). }

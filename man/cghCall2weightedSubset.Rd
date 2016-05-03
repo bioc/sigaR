@@ -7,7 +7,8 @@ Weighted subsetting cghCall-objects.
 Limit an \code{\link{cghCall}} object to a subset of its features, using weighted averaging of the copy number signal.
 }
 \usage{
-cghCall2weightedSubset(CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus = 1, verbose=TRUE)
+cghCall2weightedSubset(CNdata, featuresAndWeights, chr, bpstart, 
+bpend, ncpus = 1, verbose=TRUE)
 }
 \arguments{
   \item{CNdata}{ Object of class \code{\link{cghCall}}. }
@@ -20,7 +21,7 @@ cghCall2weightedSubset(CNdata, featuresAndWeights, chr, bpstart, bpend, ncpus = 
 }
 \value{ Object of class \code{\link{cghCall}}, restricted to the specified subset of features. }
 \references{	
-Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{submitted for publication}. 
+Van Wieringen, W.N., Unger, K., Leday, G.G.R., Krijgsman, O., De Menezes, R.X., Ylstra, B., Van de Wiel, M.A. (2012), "Matching of array CGH and gene expression microarray features for the purpose of integrative analysis", \emph{BMC Bioinformatics}, 13:80. 
 }
 \author{ Wessel N. van Wieringen: \email{w.vanwieringen@vumc.nl} }
 \note{

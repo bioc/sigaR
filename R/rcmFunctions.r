@@ -256,8 +256,8 @@ RCMestimation <- function(Y, X, R, hypothesis="H2", shrinkType="none", estType="
 				# estimate tau's
 				Y.res <- matrix(Y.as.vec - X.circ %*% matrix(betas, ncol=1), nrow=dim(Y)[1], byrow=TRUE)
 				Y.res <- Y.res - matrix(apply(Y.res, 1, mean), ncol=dim(Y.res)[2], nrow=dim(Y.res)[1], byrow=FALSE)
-				tau.estimator <- function(gen.res, Xmat, ns){ solve(t(Xmat) %*% Xmat) %*% t(Xmat) %*% matrix(sqrt(gen.res[(ns+1):(2*ns)]) * gen.res[1:ns], ncol=1) %*% t(matrix(sqrt(gen.res[(ns+1):(2*ns)]) * gen.res[1:ns], ncol=1)) %*% Xmat %*% solve(t(Xmat) %*% Xmat) }
-				# tau.estimator <- function(gen.res, Xmat){ solve(t(Xmat) %*% Xmat) %*% t(Xmat) %*% matrix(sqrt(gen.res[(ns+1):(2*ns)]) * gen.res[1:ns], ncol=1) %*% t(matrix(sqrt(gen.res[(ns+1):(2*ns)]) * gen.res[1:ns], ncol=1)) %*% Xmat %*% solve(t(Xmat) %*% Xmat) }
+				tau.estimatorR <- function(gen.res, Xmat, ns){ solve(t(Xmat) %*% Xmat) %*% t(Xmat) %*% matrix(sqrt(gen.res[(ns+1):(2*ns)]) * gen.res[1:ns], ncol=1) %*% t(matrix(sqrt(gen.res[(ns+1):(2*ns)]) * gen.res[1:ns], ncol=1)) %*% Xmat %*% solve(t(Xmat) %*% Xmat) }
+				# tau.estimatorR1 <- function(gen.res, Xmat){ solve(t(Xmat) %*% Xmat) %*% t(Xmat) %*% matrix(sqrt(gen.res[(ns+1):(2*ns)]) * gen.res[1:ns], ncol=1) %*% t(matrix(sqrt(gen.res[(ns+1):(2*ns)]) * gen.res[1:ns], ncol=1)) %*% Xmat %*% solve(t(Xmat) %*% Xmat) }
 				weights <- matrix(weights, nrow=dim(Y)[1], byrow=TRUE)
 				betasPerGene <- apply(Y, 1, lm.uc, Xmat=X, estType="robust", mad.times=4)
 				betasResiduals <- betasPerGene - betas
@@ -266,7 +266,7 @@ RCMestimation <- function(Y, X, R, hypothesis="H2", shrinkType="none", estType="
 					tau2s <- sum(weights*(betasResiduals)^2)/ length(sigma2s) - sum(sigma2s * solve(t(X) %*% X)) / length(sigma2s)
 					tau2s[(tau2s < 0)] <- 0 
 				} else {
-					tau2s <- apply(cbind(Y.res, weights), 1, tau.estimator, Xmat=X, dim(Y)[2])
+					tau2s <- apply(cbind(Y.res, weights), 1, tau.estimatorR, Xmat=X, dim(Y)[2])
 					# tau2s <- apply(cbind(Y.res, weights), 1, tau.estimator, Xmat=X)
 					tau2s.per.gene <- function(st, Xmat, np){ return(diag(matrix(st[-1], ncol=np) - st[1] * solve(t(Xmat) %*% Xmat))) }
 					tau2s <- apply(rbind(sigma2s, tau2s), 2, tau2s.per.gene, Xmat=X, np=dim(X)[2])

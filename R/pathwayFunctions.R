@@ -89,9 +89,9 @@ pathway2sample <- function(Y, X, id, lambda1=1, lambdaF=1, method="FL", constr=T
 			# estimation with fusion penalty
 		        # penFit <- penalized((diag(rep(1, nrow(P))) - P) %*% Y[,j], cbind(0* X[,j], ((diag(rep(1, nrow(P))) - P)) %*% Z1), unpenalized=~0, lambda1=lambdaFvec, positive=posVec, trace=verbose)
 			if (startValues){
-		        	penFit <- penalized((diag(rep(1, nrow(P))) - P) %*% Y[,j], cbind(X[,j], ((diag(rep(1, nrow(P))) - P)) %*% Z1), unpenalized=~0, lambda1=lambdaFvec, positive=posVec, startbeta=c(startCis[j], startTrans1[j, -j] - startTrans2[j, -j]), trace=verbose)
+		        	penFit <- penalized::penalized((diag(rep(1, nrow(P))) - P) %*% Y[,j], cbind(X[,j], ((diag(rep(1, nrow(P))) - P)) %*% Z1), unpenalized=~0, lambda1=lambdaFvec, positive=posVec, startbeta=c(startCis[j], startTrans1[j, -j] - startTrans2[j, -j]), trace=verbose)
 			} else {
-		        	penFit <- penalized((diag(rep(1, nrow(P))) - P) %*% Y[,j], cbind(X[,j], ((diag(rep(1, nrow(P))) - P)) %*% Z1), unpenalized=~0, lambda1=lambdaFvec, positive=posVec, trace=verbose)
+		        	penFit <- penalized::penalized((diag(rep(1, nrow(P))) - P) %*% Y[,j], cbind(X[,j], ((diag(rep(1, nrow(P))) - P)) %*% Z1), unpenalized=~0, lambda1=lambdaFvec, positive=posVec, trace=verbose)
 			}
 
 			# fabric and format fused lasso estimates
@@ -109,9 +109,9 @@ pathway2sample <- function(Y, X, id, lambda1=1, lambdaF=1, method="FL", constr=T
 		if (method=="FLs"){
 			# penalized estimation
 			if (startValues){
-				penFit <- penalized(Y[,j], cbind(X[,j], (Z %*% t(Dtilde))[,-c(j, j+ncol(Y))]), unpenalized=~0, lambda1=c(lambdaFvec, lambda1vec), positive=posVec, startbeta=c(startCis[j], startTrans1[j, -j] - startTrans2[j, -j]), trace=verbose)
+				penFit <- penalized::penalized(Y[,j], cbind(X[,j], (Z %*% t(Dtilde))[,-c(j, j+ncol(Y))]), unpenalized=~0, lambda1=c(lambdaFvec, lambda1vec), positive=posVec, startbeta=c(startCis[j], startTrans1[j, -j] - startTrans2[j, -j]), trace=verbose)
 			} else {
-				penFit <- penalized(Y[,j], cbind(X[,j], (Z %*% t(Dtilde))[,-c(j, j+ncol(Y))]), unpenalized=~0, lambda1=c(lambdaFvec, lambda1vec), positive=posVec, trace=verbose)
+				penFit <- penalized::penalized(Y[,j], cbind(X[,j], (Z %*% t(Dtilde))[,-c(j, j+ncol(Y))]), unpenalized=~0, lambda1=c(lambdaFvec, lambda1vec), positive=posVec, trace=verbose)
 			}
 			betaHat[j] <- coef(penFit, "all")[1]
 			xi <- coef(penFit, "all")[2:ncol(Y)]
@@ -174,9 +174,9 @@ pathway1sample <- function(Y, X, lambda1=1, constr=TRUE, startCis=numeric(), sta
 	
 		# lasso estimation
 		if (startValues){
-			penFit <- penalized(Y[,j], cbind(X[,j,drop=FALSE], Y[,-j]), unpenalized=~0, lambda1=lambda1vec, positive=posVec, startbeta=c(startCis[j], startTrans[j, -j]), trace=verbose)
+			penFit <- penalized::penalized(Y[,j], cbind(X[,j,drop=FALSE], Y[,-j]), unpenalized=~0, lambda1=lambda1vec, positive=posVec, startbeta=c(startCis[j], startTrans[j, -j]), trace=verbose)
 		} else {
-			penFit <- penalized(Y[,j], cbind(X[,j,drop=FALSE], Y[,-j]), unpenalized=~0, lambda1=lambda1vec, positive=posVec, trace=verbose)
+			penFit <- penalized::penalized(Y[,j], cbind(X[,j,drop=FALSE], Y[,-j]), unpenalized=~0, lambda1=lambda1vec, positive=posVec, trace=verbose)
 		}
 
 		# extract lasso estimates
