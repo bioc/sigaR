@@ -207,8 +207,8 @@ entropyTest <- function(Y, id, nPerm=1000, method="normal", k0=1, k1=1, center=T
 	nullDist <- numeric()
 	if (ncpus > 1){
 		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
-		sfLibrary(corpcor, verbose=FALSE)
+		sfLibrary(package="sigaR", verbose=FALSE, character.only=TRUE)
+		sfLibrary(package="corpcor", verbose=FALSE, character.only=TRUE)
 	}
 	for(j in 1:(length(steps)-1)){
 		if (verbose){ cat(paste(steps[j]," of ", steps[length(steps)]," permutations done, and counting...", sep=""), "\n") }	
@@ -270,8 +270,8 @@ mutInfTest <- function(Y, X, nPerm=1000, method="normal", k=1, center=TRUE, resc
 	nullDist <- numeric()
 	if (ncpus > 1){
 		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
-		sfLibrary(corpcor, verbose=FALSE)
+		sfLibrary(package="sigaR", verbose=FALSE, character.only=TRUE)
+		sfLibrary(package="corpcor", verbose=FALSE, character.only=TRUE)
 	}
 	for(j in 1:(length(steps)-1)){
 		if (verbose){ cat(paste(steps[j]," of ", steps[length(steps)]," permutations done, and counting...", sep=""), "\n") }	

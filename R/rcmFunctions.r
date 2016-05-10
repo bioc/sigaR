@@ -52,9 +52,9 @@ RCMtest <- function(Y, X, R, testType="I", nBoot=100, lowCiThres=0.10, shrinkTyp
 	steps <- steps[steps <= nBoot]
 	if (ncpus > 1){
 		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
-		sfLibrary(quadprog, verbose=FALSE)
-		sfLibrary(MASS, verbose=FALSE)
+		sfLibrary(package="sigaR", verbose=FALSE, character.only=TRUE)
+		sfLibrary(package="quadprog", verbose=FALSE, character.only=TRUE)
+		sfLibrary(package="MASS", verbose=FALSE, character.only=TRUE)
 	}
 	for(j in 1:(length(steps)-1)){
 		if (verbose){ cat(paste(steps[j]," of ", steps[length(steps)]," bootstraps done, and counting...", sep=""), "\n") }

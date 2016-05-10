@@ -27,7 +27,7 @@ importFrom(methods, new)
 
 importFrom(mvtnorm, rmvnorm)
 
-importFrom(penalized, penalized)
+importFrom(penalized, coefficients, penalized)
 
 importFrom(quadprog, solve.QP)
 

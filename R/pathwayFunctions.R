@@ -95,7 +95,7 @@ pathway2sample <- function(Y, X, id, lambda1=1, lambdaF=1, method="FL", constr=T
 			}
 
 			# fabric and format fused lasso estimates
-			xi <- coefficients(penFit, "all")[-1]
+			xi <- penalized::coefficients(penFit, "all")[-1]
 			R <- matrix(c(1, rep(0, ncol(Z2))), nrow=1)
 			QPpars <- solve.QP(R %*% ginv(t(cbind(X[,j], Z2)) %*% cbind(X[,j], Z2)) %*% t(R),  -R %*% ginv(cbind(X[,j], Z2)) %*% Y[,j, drop=FALSE], diag(1))$solution
 			zeta <- ginv(t(cbind(X[,j], Z2)) %*% cbind(X[,j], Z2)) %*% t(cbind(X[,j], Z2)) %*% Y[,j] + QPpars * ginv(t(cbind(X[,j], Z2)) %*% cbind(X[,j], Z2)) %*% t(R)
@@ -113,9 +113,9 @@ pathway2sample <- function(Y, X, id, lambda1=1, lambdaF=1, method="FL", constr=T
 			} else {
 				penFit <- penalized::penalized(Y[,j], cbind(X[,j], (Z %*% t(Dtilde))[,-c(j, j+ncol(Y))]), unpenalized=~0, lambda1=c(lambdaFvec, lambda1vec), positive=posVec, trace=verbose)
 			}
-			betaHat[j] <- coefficients(penFit, "all")[1]
-			xi <- coefficients(penFit, "all")[2:ncol(Y)]
-			zeta <- coefficients(penFit, "all")[-c(1:ncol(Y))]
+			betaHat[j] <- penalized::coefficients(penFit, "all")[1]
+			xi <- penalized::coefficients(penFit, "all")[2:ncol(Y)]
+			zeta <- penalized::coefficients(penFit, "all")[-c(1:ncol(Y))]
 			estR <- solve(Dtilde[-c(j, j+ncol(Y)), -c(j, j+ncol(Y))]) %*% matrix(c(xi, zeta), ncol=1)
 			transHatG1[j, -j] <- -estR[c(1:(ncol(Y)-1))]
 			transHatG2[j, -j] <- -estR[-c(1:(ncol(Y)-1))]
@@ -180,9 +180,9 @@ pathway1sample <- function(Y, X, lambda1=1, constr=TRUE, startCis=numeric(), sta
 		}
 
 		# extract lasso estimates
-		transHat[j, -j] <- -coefficients(penFit, "all")[-1]
-		betaHat[j] <- coefficients(penFit, "all")[1]
-		SigmaHat[j] <- var(residuals(penFit))
+		transHat[j, -j] <- -penalized::coefficients(penFit, "all")[-1]
+		betaHat[j] <- penalized::coefficients(penFit, "all")[1]
+		SigmaHat[j] <- var(penalized::residuals(penFit))
 		print(j)
 	}
 	return(new("pathwayFit", Cis=betaHat, Trans=transHat, Trans1=matrix(), Trans2=matrix(), Sigma=SigmaHat, lambda1=data.matrix(lambda1), lambdaF=matrix(), epsilon=numeric(), method=character(), constr=constr)) 

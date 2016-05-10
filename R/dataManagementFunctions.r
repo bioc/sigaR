@@ -42,7 +42,7 @@ cghCall2maximumSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpen
 	if (ncpus == 1){ idMat <- t(sapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) }
 	if (ncpus > 1){ 
 		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
+		sfLibrary(package="sigaR", verbose=FALSE, character.only=TRUE)
 		idMat <- t(sfSapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) 
 	}
 
@@ -216,7 +216,7 @@ cghCall2weightedSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpe
 	if (ncpus == 1){ copynumberMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, copynumberMat, simplify=TRUE))	}
 	if (ncpus > 1){
 		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
+		sfLibrary(package="sigaR", verbose=FALSE, character.only=TRUE)
 		copynumberMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, copynumberMat, simplify=TRUE))	
 	}
 
@@ -387,7 +387,7 @@ cghCall2maximumSubset <- function(CNdata, featuresAndWeights, chr, bpstart, bpen
 	if (ncpus == 1){ idMat <- t(sapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) }
 	if (ncpus > 1){ 
 		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
+		sfLibrary(package="sigaR", verbose=FALSE, character.only=TRUE)
 		idMat <- t(sfSapply(featuresAndWeights, .slhFuncMaxCGHcallData, segmentedMat, simplify=TRUE)) 
 	}
 
@@ -838,7 +838,7 @@ cghSeg2weightedSubset <- function (CNdata, featuresAndWeights, chr, bpstart, bpe
     }
     if (ncpus > 1) {
         sfInit(parallel = TRUE, cpus = ncpus)
-        sfLibrary(sigaR, verbose = FALSE)
+        sfLibrary(package="sigaR", verbose = FALSE, character.only=TRUE)
         copynumberMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, 
             copynumberMat, simplify = TRUE))
     }
@@ -1115,7 +1115,7 @@ ExpressionSet2weightedSubset <- function(GEdata, featuresAndWeights, chr, bpstar
 	if (ncpus == 1){ exprMat <- t(sapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, exprMat, simplify=TRUE)) }
 	if (ncpus > 1){ 
 		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
+		sfLibrary(package="sigaR", verbose=FALSE, character.only=TRUE)
 		exprMat <- t(sfSapply(featuresAndWeights, .slhFuncWeightedCGHcallExpressionSetData, exprMat, simplify=TRUE))
 	}
 
@@ -1233,7 +1233,7 @@ matchCGHcall2ExpressionSet <- function(CNdata, GEdata, CNchr, CNbpstart, CNbpend
 	if (verbose){ cat("start actual matching procedure...", "\n") }
 	if (ncpus > 1){
 		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
+		sfLibrary(package="sigaR", verbose=FALSE, character.only=TRUE)
 	}
 	if (method == "overlap"){
 		# find features with biggest overlap and remove features without any overlap
@@ -1395,7 +1395,7 @@ matchAnn2Ann <- function(chr1, bpstart1, bpend1, chr2, bpstart2, bpend2, method=
 	if (verbose){ cat("start actual matching procedure ...", "\n") }
 	if (ncpus > 1){	
 		sfInit(parallel=TRUE, cpus=ncpus)
-		sfLibrary(sigaR, verbose=FALSE)
+		sfLibrary(package="sigaR", verbose=FALSE, character.only=TRUE)
 	}
 	if (method == "distance"){
 		# determine mid base pair
