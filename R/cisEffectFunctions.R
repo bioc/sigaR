@@ -217,22 +217,22 @@ cisEffectPlot <- function (geneId, CNdata, GEdata, verbose=FALSE){
 
 	# Estimate alpha parameters per clone, a0 classes
 	if (verbose){ cat("pre-test...", "\n") }
-	alphamat <- t(apply(cghdata.probs, 1, .alphaest, nosamp=nosamp, a=nclass))
+	alphamat <- t(apply(cghdata.probs, 1, sigaR:::.alphaest, nosamp=nosamp, a=nclass))
 
 	# Perform pre-test and merge columns
-	datacgh2 <- as.matrix(t(apply(cbind(alphamat, cghdata.probs), 1, .pretest)))
+	datacgh2 <- as.matrix(t(apply(cbind(alphamat, cghdata.probs), 1, sigaR:::.pretest)))
 	lossorgain <- datacgh2[,1]
 	alphas2 <- datacgh2[,2:3]
 	datafortest <- as.matrix(cbind(datacgh2, exprs(GEdata))[,-(1:3)])
 
 	# Estimate new alpha and bivariate alpha parameters per clone
-	alphabivmat <- t(apply(datafortest, 1, .alphabivariate, nosamp=nosamp, a=2))
+	alphabivmat <- t(apply(datafortest, 1, sigaR:::.alphabivariate, nosamp=nosamp, a=2))
 	colnames(alphabivmat) <- c("a11", "a22", "a12")
 
 	# gene.id <- which(data.tuned$genestotest==geneId)
 	cgh.em <- datafortest[1, ]
-	alphasbiv <- .alphabivariate(cgh.em[c(1:(2 * nosamp))], nosamp, 2)
-	alphas <- .alphaest(cgh.em[c(1:(2 * nosamp))], nosamp, 2)
+	alphasbiv <- sigaR:::.alphabivariate(cgh.em[c(1:(2 * nosamp))], nosamp, 2)
+	alphas <- sigaR:::.alphaest(cgh.em[c(1:(2 * nosamp))], nosamp, 2)
 	cgh.em <- cbind(matrix(cgh.em[c(1:(2 * nosamp))], ncol = 2, byrow = TRUE), cgh.em[c((2 * nosamp + 1):((2 + 1) * nosamp))])
 	c1 <- (alphasbiv[1]/alphasbiv[3] - alphas[1]/alphas[2])^(-1)
 	c2 <- (alphasbiv[2]/alphasbiv[3] - alphas[2]/alphas[1])^(-1)

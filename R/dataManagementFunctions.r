@@ -1471,8 +1471,9 @@ ExpressionSet2subset <- function(GEdata, featureSubset, verbose=TRUE){
 	if ( !(min(featureSubset) >= 1 | max(featureSubset) <= nrow(fData(GEdata))) ){ stop("featureSubset contains illegal row numbers.") }
 
 	# subsetting
-	fData(GEdata) <- fData(GEdata)[featureSubset, , drop=FALSE]	
-	exprs(GEdata) <- exprs(GEdata)[featureSubset, , drop=FALSE]	
+	# fData(GEdata) <- fData(GEdata)[featureSubset, , drop=FALSE]	
+	# exprs(GEdata) <- exprs(GEdata)[featureSubset, , drop=FALSE]
+	GEdata <- GEdata[featureSubset,,drop=FALSE]	
 	return(GEdata)
 }
 
