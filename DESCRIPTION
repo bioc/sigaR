@@ -1,7 +1,7 @@
 Package: sigaR
 Type: Package
 Title: Statistics for Integrative Genomics Analyses in R
-Version: 1.37.0
+Version: 1.37.1
 Date: 2016-10-04
 Author: Wessel N. van Wieringen <w.vanwieringen@vumc.nl>
 Maintainer: Wessel N. van Wieringen <w.vanwieringen@vumc.nl>
@@ -19,3 +19,4 @@ biocViews: Microarray, DifferentialExpression, aCGH, GeneExpression,
         Pathways
 NeedsCompilation: no
 Packaged: 2016-08-03 00:55:24 UTC; biocbuild
+PackageStatus: Deprecated
